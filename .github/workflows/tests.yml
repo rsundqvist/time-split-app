@@ -1,0 +1,79 @@
+name: tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Log level"
+        required: true
+        default: "info"
+      tags:
+        required: false
+        description: "Test scenario tags"
+  push:
+    branches:
+     - master
+  pull_request:
+    branches:
+
+env:
+  # Need to be explicit when using pip; this is only for the official Poetry (curl-based) installer.
+  # https://github.com/python-poetry/poetry/issues/7611
+  POETRY_VERSION: 1.8.2
+  POLARS_SKIP_CPU_CHECK: true
+
+jobs:
+  linting:
+    name: Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Linting
+        run: |
+          pip install poetry==$POETRY_VERSION
+          poetry install --only=main,devops
+          poetry run inv lint
+
+  tests:
+    needs: linting
+    name: ${{ matrix.os }} / ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ Ubuntu ]
+        python-version: [ '3.11', '3.12' ]
+        experimental: [ false ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system deps
+        shell: bash
+        run: |
+          pip install nox
+          pip install poetry==$POETRY_VERSION
+
+      - name: Run mypy with nox
+        shell: bash
+        run: nox --force-color -s mypy-${{ matrix.python-version }}
+
+      - name: Run tests with nox
+        shell: bash
+        run: nox --force-color -s tests-${{ matrix.python-version }}
+
+      - name: Run safety check
+        if: matrix.python-version == '3.12' && matrix.os == 'Ubuntu'
+        shell: bash
+        run: nox --force-color -s safety

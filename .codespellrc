@@ -1,0 +1,3 @@
+[codespell]
+skip = *.ipynb
+summary = true

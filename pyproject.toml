@@ -1,0 +1,143 @@
+[tool.poetry]
+name = "time-fold-explorer"
+version = "0.0.0"
+description = "Companion app for the `time-split` library."
+authors = ["Richard Sundqvist <richard.sundqvist@live.se>"]
+
+readme = "README.md"
+homepage = "https://github.com/rsundqvist/time-fold-explorer"
+repository = "https://github.com/rsundqvist/time-fold-explorer"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/rsundqvist/time-fold-explorer/issues"
+"Changelog" = "https://github.com/rsundqvist/time-fold-explorer/blob/master/CHANGELOG.md"
+
+[tool.poetry.scripts]
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+
+pandas = "~2.2.2"
+streamlit = "~1.37.1"
+time-split = { version = "~0.5.0", extras = ["plotting"] }
+croniter = "~3.0.3"
+
+[tool.poetry.group.manual-extras.dependencies]
+# Extras that must be available for docs + tests go here. Doc/test-only deps go in their respective groups.
+
+pyarrow = ">=15.0.2,<17.0.0"
+polars = { version = "^0.20.19", extras = ["pandas"] }
+streamlit = "*"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.1.1"
+coverage = "^7.4.4"
+pytest-cov = "^5.0.0"
+
+[tool.poetry.group.devops.dependencies]
+invoke = "^2.2.0"
+mypy = "^1.10.1"
+ruff = "^0.5.0"
+
+safety = "^3.2.3"
+codespell = "^2.3.0"
+bump2version = "^1.0.1"
+
+[tool.ruff]
+line-length = 120
+fix = true
+unsafe-fixes = false
+output-format = "grouped"
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 80
+line-ending = "lf"
+
+[tool.ruff.lint]
+exclude = ["notebooks/*"]
+select = [
+    "ANN",
+    "S",
+    "I",
+    "B",
+    "D",
+    "F",
+    "W",
+    "E",
+    "SLOT",
+    "SIM",
+    "TID",
+    "TD",
+    "TCH",
+    "ARG",
+    "PTH",
+    "NPY",
+    "PD",
+    "N",
+    "PERF",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "UP",
+    "FURB",
+    "RUF",
+    "TRY",
+]
+ignore = [
+    "ANN101", # Missing type annotation for `self` in method
+    "ANN102", # Missing type annotation for `cls` in method
+    "D105", # Missing docstring in magic method
+    "D107", # Missing docstring in `__init__`
+    "ANN401",
+    "TID252", # Prefer absolute imports over relative imports from parent modules
+    "TRY003",
+    "PD901", # Avoid using the generic variable name `df` for DataFrames
+    "PLC0415", # `import` should be at the top-level of a file
+    "PLR0913", #
+    "SIM108", # Use ternary operator - coverage issue, see https://github.com/nedbat/coveragepy/issues/509
+    "TD003", # Missing issue link
+]
+allowed-confusables = ["ℹ"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "D",
+    "S101", # Allow 'assert' keyword
+    "ANN",
+    "PLR2004", # Allow magic values
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+[tool.ruff.lint.pycodestyle]
+max-line-length = 150
+
+[tool.pytest]
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error",
+    # "ignore:Matplotlib is currently using agg:UserWarning",
+    # "ignore:.*utcfromtimestamp.*:DeprecationWarning", # Detta är farligt - ta bort
+]
+log_file_level = 10
+log_file = "pytest.log"
+
+[build-system]
+requires = ["poetry-core>=1.0.8"]
+build-backend = "poetry.core.masonry.api"
