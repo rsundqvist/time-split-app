@@ -35,7 +35,9 @@ def _too_many_splits(
 
 
 def get_about() -> str:
-    from time_split import __version__
+    from time_split import __version__ as lib_version
+
+    from time_fold_explorer import __version__ as app_version
 
     return f"""## Time Fold Explorer
 This applications is designed to help experiment with `time-split` splitting parameters.
@@ -47,7 +49,7 @@ See https://time-split.readthedocs.io/ for library documentation.
 2. Use the sidebar widgets to control how the data is split.
 3. Use the `📊 Folds` and `📈 Aggregations per fold` tabs to explore the effects.
 
-Please visit the [GitHub page](https://github.com/rsundqvist/time-split) for questions or feedback.
+Please visit the [GitHub page](https://github.com/rsundqvist/time-split/) for questions or feedback.
 
 #### ⚙️ Server configuration
 These values cannot be changed.
@@ -56,11 +58,11 @@ These values cannot be changed.
 
 See https://hub.docker.com/repository/docker/rsundqvist/time-split/ to spawn custom servers.
 
-### Server `time-split` version
-The server is using version `{__version__}`. To install this version, run
+### Version
+Server version is `{app_version}`, using `time-split=={lib_version}`. To install, run
 
 ```bash
-pip install time-split=={__version__}
+pip install time-split=={lib_version}
 ```
 
 in your favorite terminal. You may then copy one of the snippets from the `📊 Folds` tab to get started.
