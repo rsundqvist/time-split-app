@@ -162,8 +162,10 @@ def _get_hard_limits() -> ValuesDict:
             _check_hard_limit(key, max_value=max_value, value=int(default))
 
             updated_keys.append(key)
-            LOGGER.debug(f"Setting {key=} to {default=} (from {raw=}, max={max_value!r}).")
+            LOGGER.info(f"Setting {key=} to {default=} (from {raw=}, max={max_value!r}).")
             setattr(config, key, default)
+        else:
+            LOGGER.info(f"Setting {key=} to the maximum value (since {default_key}={raw!r}): {max_value!r}.")
 
     current = config.get_values()
     LOGGER.info(
