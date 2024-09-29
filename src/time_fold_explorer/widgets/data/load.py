@@ -16,11 +16,7 @@ def read_file(path: str, **kwargs: _t.Any) -> _pd.DataFrame:
     if (pandas_read_fn := FILE_SUFFIXES.get(file_format)) is None:
         raise NotImplementedError(f"{file_format=}")
 
-    try:
-        return pandas_read_fn(path, **kwargs)
-    except Exception as e:
-        _st.error(e)
-        _st.stop()
+    return pandas_read_fn(path, **kwargs)
 
 
 FILE_SUFFIXES: dict[str, _t.Callable[[str], _pd.DataFrame]] = {
