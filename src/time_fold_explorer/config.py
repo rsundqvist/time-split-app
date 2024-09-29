@@ -30,6 +30,11 @@ REQUIRE_DATASETS: bool = _read_bool("REQUIRE_DATASETS", False)
 """If set, the server will refuse to start if not the ``DATASETS_CONFIG_PATH`` file does not exist."""
 DATASET_CACHE_TTL: int = int(_environ.get("DATASET_CACHE_TTL", 60 * 60))
 """Cache timeout in seconds. Default is one hour."""
+DATASET_RADIO_LIMIT: int = int(_environ.get("DATASET_RADIO_LIMIT", 3))
+"""Maximum number of dataset options to show as radio buttons.
+
+Radio buttons are shown with one-line descriptions and all options visible at once. If this limit is exceeded, the UI
+shows a label-only dropdown menu instead."""
 PROCESS_QUERY_PARAMS: bool = _environ.get("PROCESS_QUERY_PARAMS", "").lower() != "false"
 """Abort if parameters are given when ``False``. See :class:`~.widgets.types.QueryParams` for details."""
 PERMALINK_BASE_URL: str = _environ.get("PERMALINK_BASE_URL", "")

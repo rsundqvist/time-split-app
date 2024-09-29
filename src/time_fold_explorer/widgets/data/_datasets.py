@@ -35,15 +35,28 @@ class DatasetWidget:
         frames = {ds.label: ds for ds in datasets}
 
         options = [*frames]
+        option_summaries = [ds.description.partition("\n")[0] for ds in datasets]
         index = 0 if (query_dataset := QueryParams.get().data) is None else _handle_query_arg(query_dataset, options)
-        selection = st.radio(
-            "select-dataset",
-            options,
-            index=index,
-            captions=[ds.description.partition("\n")[0] for ds in datasets],
-            horizontal=True,
-            label_visibility="collapsed",
-        )
+        kwargs: dict[str, Any] = {
+            "label": "Select dataset",
+            "options": options,
+            "index": index,
+            "help": f"Dataset options ({len(options)}):"
+            + "".join(f"\n * {label}: {summary}" for label, summary in zip(options, option_summaries))
+            + f"\n\nDatasets are reloaded every `{config.DATASET_CACHE_TTL}` seconds.",
+        }
+
+        if len(options) <= config.DATASET_RADIO_LIMIT:
+            selection = st.radio(
+                **kwargs,
+                horizontal=True,
+                captions=option_summaries,
+            )
+        else:
+            selection = st.selectbox(
+                **kwargs,
+                format_func=QueryParams.normalize_dataset,
+            )
         assert selection is not None
 
         dataset = frames[selection]
