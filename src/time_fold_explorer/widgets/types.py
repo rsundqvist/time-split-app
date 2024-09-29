@@ -90,7 +90,6 @@ class DatasetConfig:
     aggregations: dict[str, str] = _dataclasses.field(default_factory=dict)
     description: str = ""
     read_function_kwargs: dict[str, _t.Any] = _dataclasses.field(default_factory=dict)
-    # aggregations: dict[str, str] = _dataclasses.field(default_factory=dict)  # Not implemented
     _section: str | None = None
 
     @classmethod

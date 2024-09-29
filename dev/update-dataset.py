@@ -11,8 +11,8 @@ try:
 except ModuleNotFoundError:
     raise ImportError("Run `pip install tomli-w tqdm` to execute this script.")
 
-from time_split.streamlit.widgets.data import SampleDataWidget
-from time_split.streamlit.widgets.types import DatasetConfig
+from time_fold_explorer.widgets.data import SampleDataWidget
+from time_fold_explorer.widgets.types import DatasetConfig
 
 ROOT = Path(__file__).parent
 assert len(sys.argv) in {2, 3}
@@ -60,7 +60,10 @@ for suf, writer in tqdm(WRITERS.items()):
     path = root.format(suf)
 
     try:
-        writer(df, path)
+        try:
+            writer(df, path, index=False)
+        except TypeError:
+            writer(df, path)
     except Exception as e:
         e.add_note(f"{path=}")
         raise

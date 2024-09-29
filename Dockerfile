@@ -19,7 +19,7 @@ RUN /root/.local/bin/poetry install \
 COPY src/ /tmp/time-fold-explorer/
 RUN pip install /tmp/time-fold-explorer/ --no-deps --no-cache --no-cache-dir && rm -rf /tmp/time-fold-explorer/
 
-ENV HOME /home/streamlit
+ENV HOME=/home/streamlit
 RUN useradd --create-home --home-dir $HOME streamlit \
     && mkdir -p $HOME \
     && chown -R streamlit:streamlit $HOME

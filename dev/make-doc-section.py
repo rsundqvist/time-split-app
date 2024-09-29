@@ -4,7 +4,7 @@ import sys
 TEMPLATE = """
 {title}
 The {name} application
-(available {link_to_azure})
+(available {public_link})
 is designed to help evaluate the effects of different
 {link_to_parameters}.
 To start it locally using
@@ -20,9 +20,9 @@ to build application URLs with preselected splitting parameters.
 def make(converter: "Converter") -> str:
     from time_split.support import create_explorer_link
 
-    azure = "http://20.240.208.202/time-split/"
+    host = "https://time-split.streamlit.app/"
     limits = ("2019-04-11 00:35:00", "2019-05-11 21:30:00")
-    link_to_azure = create_explorer_link(azure, limits, schedule="0 0 * * MON,FRI", n_splits=2, step=2)
+    public_link = create_explorer_link(host, limits, schedule="0 0 * * MON,FRI", n_splits=2, step=2)
 
     image = "rsundqvist/time-split"
     shield = converter.shield(
@@ -34,7 +34,7 @@ def make(converter: "Converter") -> str:
     result = TEMPLATE.format(
         title=converter.title("Experimenting with parameters"),
         name=converter.bold("Time Fold Explorer"),
-        link_to_azure=converter.link("here", url=link_to_azure),
+        public_link=converter.link("here", url=public_link),
         link_to_parameters=converter.parameters(),
         shield=shield,
         run_command=converter.command(f"docker run -p 8501:8501 {image}"),

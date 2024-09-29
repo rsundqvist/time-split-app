@@ -67,6 +67,21 @@ dataset. The description supports Markdown syntax.
 
 Multiple datasets may be configured in their own top-level sections. Labels must be unique.
 
+## Mounted datasets
+A convenient way to keep datasets up-to-date without relying on network storage is to mount a dataset folder on a local
+machine, using e.g. a CRON job to update the data. To start the image with datasets mounted, run:
+
+```bash
+docker run \
+  -p 8501:8501 \
+  -v ./data:/home/streamlit/data:ro \
+  -v ./datasets.toml:/home/streamlit/datasets.toml:ro \
+  -e REQUIRE_DATASETS=true \
+  rsundqvist/time-split 
+```
+
+in the terminal. Paths in `datasets.toml` should be absolute, or relative to `/home/streamlit/`.
+
 # Environment variables
 See [config.py](src/time_fold_explorer/config.py) for configurable values. Use `true|false` for boolean variables. 
 Documentation for the underlying framework (Streamlit) is available 
