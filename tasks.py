@@ -15,6 +15,8 @@ SOURCE_DIR = ROOT_DIR.joinpath("src/time_fold_explorer")
 TEST_DIR = ROOT_DIR.joinpath("tests")
 PYTHON_TARGETS = [
     ROOT_DIR / "app.py",
+    ROOT_DIR / "dev/make-doc-section.py",
+    ROOT_DIR / "dev/update-datasets.py",
     SOURCE_DIR,
     TEST_DIR,
     Path(__file__),
@@ -33,8 +35,8 @@ def clean_build(c: Context) -> None:
     _run(c, "rm -fr build/")
     _run(c, "rm -fr dist/")
     _run(c, "rm -fr .eggs/")
-    _run(c, "find . -name '*.egg-info' -exec rm -fr {} +")
-    _run(c, "find . -name '*.egg' -exec rm -f {} +")
+    _run(c, "find . -maxdepth 3 -name '*.egg-info' -exec rm -fr {} +")
+    _run(c, "find . -maxdepth 3 -name '*.egg' -exec rm -f {} +")
 
 
 @task

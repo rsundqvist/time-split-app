@@ -136,7 +136,7 @@ def _check_hard_limit(key: str, *, max_value: int, value: int) -> None:
     from os import _exit as force_exit
 
     LOGGER.critical(
-        # The user can send (probably) modify the browser code to send anything.
+        # The user can (probably) modify the browser code to send anything.
         f"Illegal config {value=} > {max_value=} for {key=}. Server shutting down.",
         extra={"value": value, "max_value": max_value, "label": key},
     )
@@ -145,7 +145,7 @@ def _check_hard_limit(key: str, *, max_value: int, value: int) -> None:
 
 def _highlight_lower(series: pd.Series) -> list[str]:
     highlight = "background-color: rgba(0, 200, 0, 0.5)"
-    return np.where(series < series["Server"], highlight, "").tolist()  # type: ignore[no-any-return]
+    return np.where(series < series["Server"], highlight, "").tolist()  # type: ignore[return-value]
 
 
 @functools.cache

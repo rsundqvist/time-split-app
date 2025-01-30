@@ -14,6 +14,8 @@ from time_fold_explorer._logging import log_perf
 from time_fold_explorer.widgets.types import DataSource, QueryParams
 from ._datasets import DatasetWidget
 from ._sample_data import SampleDataWidget
+
+
 from .load import VALID_SUFFIXES, error_on_unaggregated_data, read_file, make_formatter
 
 
@@ -75,19 +77,6 @@ class DataWidget:
 
         with st.container(border=True):
             return self._load_data(source)
-
-    def select_dummy_data(
-        self,
-    ) -> tuple[pd.DataFrame, tuple[pd.Timestamp, pd.Timestamp], float]:
-        """Select parameters for generated data."""
-        assert self.sample_data is not None
-
-        start = perf_counter()
-        df = self.sample_data if isinstance(self.sample_data, pd.DataFrame) else self.sample_data.select(prompt=False)
-        limits = df.index.min(), df.index.max()
-
-        seconds = perf_counter() - start
-        return df, limits, seconds
 
     @classmethod
     def upload_dataset(cls) -> pd.DataFrame:

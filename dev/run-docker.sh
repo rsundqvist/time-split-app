@@ -1,10 +1,10 @@
 #!/bin/bash
 
-set -e
+set -eux
 
 docker build . -t time-split:dev
 
-# python dev/update-dataset.py remote .gzip
+# python dev/update-datasets.py remote .gzip
 dir=$(dirname "$0")
 docker run --network=host \
   --env-file "$dir/.env" \
