@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 * Use `streamlit==1.41.1`.
+* The Docker image is now multi-platform (`linux/amd64` + `linux/arm64`).
 
 ## [0.6.0] - 2024-08-31
 
