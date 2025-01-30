@@ -60,6 +60,8 @@ description = """This is the summary.
 Simplified version of the
 [Title basics](https://developer.imdb.com/non-commercial-datasets/#titlebasicstsvgz) IMDB
 dataset. The description supports Markdown syntax.
+
+Last updated: `2019-05-11T20:30:00+00:00'
 """
 [my-dataset.read_function_kwargs]
 # Valid options depend on the read function used.
@@ -80,7 +82,19 @@ docker run \
   rsundqvist/time-split 
 ```
 
-in the terminal. Paths in `datasets.toml` should be absolute, or relative to `/home/streamlit/`.
+in the terminal. Paths in `datasets.toml` should be absolute, or relative to `/home/streamlit/`. 
+
+## Dataset caching
+* The dataframes returned by the dataset loader are cached for `config.DATASET_CACHE_TTL` seconds (default = 12 hours).
+* Dataset configuration (`/home/streamlit/datasets.toml` above) is verified every `config.DATASET_CONFIG_CACHE_TTL`
+  seconds (default = 30 seconds).
+
+Datasets are fully reloaded if the dataset configuration file changes in any way. Including the current time when
+generating a new `datasets.toml` is enough, e.e. running
+```bash
+printf "\n# Updated: %s\n" "$(date)" >> datasets.toml
+```
+as a postprocessing step. To write TOML files, you may want to use the https://pypi.org/project/tomli-w/ package.
 
 # Environment variables
 See [config.py](src/time_fold_explorer/config.py) for configurable values. Use `true|false` for boolean variables. 

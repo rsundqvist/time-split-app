@@ -28,7 +28,9 @@ DATASETS_CONFIG_PATH: str = _environ.get("DATASETS_CONFIG_PATH") or "datasets.to
 """Determines where to look for the dataset configuration TOML. Disable the dataset view if not found."""
 REQUIRE_DATASETS: bool = _read_bool("REQUIRE_DATASETS", False)
 """If set, the server will refuse to start if not the ``DATASETS_CONFIG_PATH`` file does not exist."""
-DATASET_CACHE_TTL: int = int(_environ.get("DATASET_CACHE_TTL", 60 * 60))
+DATASET_CONFIG_CACHE_TTL: int = int(_environ.get("DATASET_CONFIG_CACHE_TTL", 30))
+"""Frequency with which the ``DATASETS_CONFIGS_PATH`` is read."""
+DATASET_CACHE_TTL: int = int(_environ.get("DATASET_CACHE_TTL", 12 * 60 * 60))
 """Cache timeout in seconds. Default is one hour."""
 DATASET_RADIO_LIMIT: int = int(_environ.get("DATASET_RADIO_LIMIT", 3))
 """Maximum number of dataset options to show as radio buttons.

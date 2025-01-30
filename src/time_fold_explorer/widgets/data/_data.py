@@ -227,7 +227,7 @@ class DataWidget:
             limit = os.environ.get("STREAMLIT_SERVER_MAX_UPLOAD_SIZE", 200)
             sources[DataSource.USER_UPLOAD] = f"Size limit {limit} MB."
         if (self.datasets and self.datasets.has_data) or isinstance(data, (int, str)):
-            sources[DataSource.BUNDLED] = f"Select one of {len(self.datasets.configs)} included datasets."
+            sources[DataSource.BUNDLED] = f"Select one of {self.datasets.size} included datasets."
 
         return sources
 

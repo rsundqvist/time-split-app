@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 from dataclasses import asdict
@@ -84,6 +85,8 @@ def upload_remote(df: pd.DataFrame, compression: str | None) -> None:
 def upload(df: pd.DataFrame, data_root: str, name: str, compression: str | None) -> None:
     start = perf_counter()
 
+    now = datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0).isoformat()
+
     configs = []
     for suf, writer in WRITERS.items():
         suffix = f"{suf}.{compression}" if compression else suf
@@ -103,7 +106,7 @@ def upload(df: pd.DataFrame, data_root: str, name: str, compression: str | None)
             label=f"`{path.rpartition('/')[-1]}`",
             index="timestamp",
             path=path,
-            description=DESCRIPTION.format(writer=writer, df=df, file=path),
+            description=DESCRIPTION.format(writer=writer, df=df, file=path, now=now),
         )
         configs.append(cfg)
 
@@ -120,6 +123,8 @@ def upload(df: pd.DataFrame, data_root: str, name: str, compression: str | None)
 DESCRIPTION = """Written by `{writer.__name__}()`.
 
 This is a multiline description. The dataset has `shape={df.shape}` and is located at path=`'{file}'`.
+
+Updated: `{now}`
 """
 
 if __name__ == "__main__":

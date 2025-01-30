@@ -1,33 +1,20 @@
+import hashlib
 from concurrent.futures import ThreadPoolExecutor
 from time import perf_counter
-from typing import Collection, Any, Iterable
+from typing import Any, Iterable
 
 import pandas as pd
 import streamlit as st
-
 from time_split._compat import fmt_sec
-from time_fold_explorer._logging import log_perf
+
 from time_fold_explorer import config
+from time_fold_explorer._logging import log_perf
 from time_fold_explorer.widgets.data.load import read_file
 from time_fold_explorer.widgets.types import DatasetConfig, Dataset, QueryParams
 
 
 class DatasetWidget:
-    """Prepackaged datasets.
-
-    Args:
-        configs: Available datasets.
-    """
-
-    def __init__(
-        self,
-        configs: Collection[DatasetConfig] | str | None = None,
-    ) -> None:
-        if configs is None:
-            configs = DatasetConfig.load_if_exists()
-        elif isinstance(configs, str):
-            configs = DatasetConfig.load(configs)
-        self.configs = configs or ()
+    """Prepackaged datasets."""
 
     def select(self) -> tuple[pd.DataFrame, dict[str, str], str]:
         """Let the user select an included dataset."""
@@ -67,40 +54,64 @@ class DatasetWidget:
 
         return dataset.df, dataset.aggregations, dataset.label
 
-    def load_datasets(self) -> list[Dataset]:
+    @staticmethod
+    def load_datasets() -> list[Dataset]:
         """Load configured datasets."""
-        return load_datasets(self.configs)
+        configs = load_dataset_configs()
+
+        if configs:
+            sha256 = hashlib.new("sha256", str(configs).encode(), usedforsecurity=False).hexdigest()
+            return load_datasets(sha256, configs)
+        else:
+            return []
 
     @property
     def has_data(self) -> bool:
-        return bool(self.configs)
+        return self.size > 0
 
-    def __post_init__(self) -> None:
-        cfgs: dict[str, DatasetConfig] = {}
-        for cfg in self.configs:
-            label = cfg.label
-            if label in cfgs:
-                msg = f"Duplicated {label=}\n    old={cfgs[label]}\n    new={cfg}"
-                raise ValueError(msg)
-            else:
-                cfgs[label] = cfg
+    @property
+    def size(self) -> int:
+        configs = load_dataset_configs()
+        return len(configs) if configs else 0
 
 
-@st.cache_data(ttl=config.DATASET_CACHE_TTL)
-def load_datasets(cfgs: Collection[DatasetConfig]) -> list[Dataset]:
+@st.cache_data(ttl=config.DATASET_CONFIG_CACHE_TTL, max_entries=1)
+def load_dataset_configs() -> tuple[DatasetConfig, ...] | None:
+    """Load configuration file."""
+    configs = DatasetConfig.load_if_exists()
+
+    if configs:
+        _check_duplicates(configs)
+
+    return configs
+
+
+def _check_duplicates(configs: tuple[DatasetConfig, ...]) -> None:
+    seen: dict[str, DatasetConfig] = {}
+    for cfg in configs:
+        label = cfg.label
+        if label in seen:
+            msg = f"Duplicated {label=}\n    old={seen[label]}\n    new={cfg}"
+            raise ValueError(msg)
+        else:
+            seen[label] = cfg
+
+
+@st.cache_data(ttl=config.DATASET_CACHE_TTL, max_entries=1)
+def load_datasets(sha256: str, _cfgs: tuple[DatasetConfig, ...]) -> list[Dataset]:
     """Load datasets from configuration."""
     start = perf_counter()
 
     max_workers = 2
     with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="load-dataset") as executor:
-        datasets = list(executor.map(_load_dataset, cfgs))
+        datasets = list(executor.map(_load_dataset, _cfgs))
 
     seconds = perf_counter() - start
     log_perf(
-        f"Loaded {len(cfgs)} datasets using {max_workers} worker threads in {fmt_sec(seconds)}",
+        f"Loaded {len(_cfgs)} datasets using {max_workers} threads in {fmt_sec(seconds)}",
         df={ds.label: ds.df for ds in datasets},
         seconds=seconds,
-        extra={},
+        extra={"sha256": f"0x{sha256}"},
     )
     return datasets
 
