@@ -39,15 +39,21 @@ To bundle datasets, mount a configuration file (determined by
 [`DATASETS_CONFIG_PATH='/home/streamlit/datasets.toml'`](https://time-split.readthedocs.io/en/stable/generated/time_split.streamlit.config.html#time_split.streamlit.config.DATASETS_CONFIG_PATH)
 ). The `DatasetConfig` struct has the following keys:
 
-* `label`: Optional. Name shown in the UI. Defaults to section header (i.e. *"my-dataset"* below).
-* `path`: Required. First argument to the `pandas` read function.
-* `index`: Required. Must be datetime-like.
-* `aggregations`: Optional. Determines function to use in the `📈 Aggregations per fold` tab.
-* `description`: Optional. The first line will be used as the summary in the UI.
-* `read_function_kwargs`: Keyword arguments for the `pandas` read function used (as determined by the `path`).
+| Key                    | Type             | Required | Description                                                                   |
+|------------------------|------------------|----------|-------------------------------------------------------------------------------|
+| `label`                | `string`         |          | Name shown in the UI. Defaults to section header (i.e. *"my-dataset"* below). |
+| `path`                 | `string`         | Required | First argument to the `pandas` read function.                                 |
+| `index`                | `string`         | Required | Datetime-like column. Will be converted using [pandas.to_datetime()].         |
+| `aggregations`         | `dict[str, str]` |          | Determines function to use in the `📈 Aggregations per fold` tab.             |
+| `description`          | `string`         |          | Markdown. The first line will be used as the summary in the UI.               |
+| `read_function_kwargs` | `dict[str, Any]` |          | Keyword arguments for the `pandas` read function used.                        |
 
-Additional dependencies are required for remote filesystems. You may use `EXTRA_PIP_PACKAGES=s3fs` to install
-dependencies for the S3 paths used below.
+[pandas.to_datetime()]: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_datetime.html
+
+The read function is chosen automatically based on the path.
+
+> ℹ️ Additional dependencies are required for remote filesystems.
+> You may use `EXTRA_PIP_PACKAGES=s3fs` to install dependencies for the S3 paths used below.
 
 ```toml
 [my-dataset]
@@ -64,7 +70,7 @@ dataset. The description supports Markdown syntax.
 Last updated: `2019-05-11T20:30:00+00:00'
 """
 [my-dataset.read_function_kwargs]
-# Valid options depend on the read function used.
+# Valid options depend on the read function used (pandas.read_csv, in this case).
 ```
 
 Multiple datasets may be configured in their own top-level sections. Labels must be unique.
@@ -72,29 +78,20 @@ Multiple datasets may be configured in their own top-level sections. Labels must
 ## Mounted datasets
 A convenient way to keep datasets up-to-date without relying on network storage is to mount a dataset folder on a local
 machine, using e.g. a CRON job to update the data. To start the image with datasets mounted, run:
-
 ```bash
 docker run \
   -p 8501:8501 \
   -v ./data:/home/streamlit/data:ro \
   -v ./datasets.toml:/home/streamlit/datasets.toml:ro \
   -e REQUIRE_DATASETS=true \
-  rsundqvist/time-split 
+  rsundqvist/time-split
 ```
+in the terminal. The [tomli-w](https://pypi.org/project/tomli-w/) package may be used to emit TOML files if using Python.
 
-in the terminal. Paths in `datasets.toml` should be absolute, or relative to `/home/streamlit/`. 
-
-## Dataset caching
 * The dataframes returned by the dataset loader are cached for `config.DATASET_CACHE_TTL` seconds (default = 12 hours).
-* Dataset configuration (`/home/streamlit/datasets.toml` above) is verified every `config.DATASET_CONFIG_CACHE_TTL`
-  seconds (default = 30 seconds).
+* The dataset configuration file is read every `config.DATASET_CONFIG_CACHE_TTL` seconds (default = 30 seconds).
 
-Datasets are fully reloaded if the dataset configuration file changes in any way. Including the current time when
-generating a new `datasets.toml` is enough, e.e. running
-```bash
-printf "\n# Updated: %s\n" "$(date)" >> datasets.toml
-```
-as a postprocessing step. To write TOML files, you may want to use the https://pypi.org/project/tomli-w/ package.
+All datasets are reloaded immediately if the configuration changes, ignoring comments and formatting.
 
 # Environment variables
 See [config.py](src/time_fold_explorer/config.py) for configurable values. Use `true|false` for boolean variables. 
