@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -6,6 +5,7 @@ from time import perf_counter
 
 import pandas as pd
 import streamlit as st
+import streamlit.config as stc
 from rics.strings import format_bytes
 
 from time_split._compat import fmt_sec
@@ -85,8 +85,9 @@ class DataWidget:
         file = st.file_uploader("upload-file", type=VALID_SUFFIXES, label_visibility="collapsed")
 
         if file is None:
-            st.info("Select a file.", icon="ℹ️")
-            st.stop()
+            st.sidebar.info("Click `⚙️ Configure data` and select a dataset to continue.", icon="ℹ️")
+            msg = "No data selected. Click `⚙️ Configure data` and select a dataset to continue."
+            raise ValueError(msg)
 
         with TemporaryDirectory("time-split") as tmp:
             path = Path(tmp) / file.name
@@ -224,7 +225,7 @@ class DataWidget:
         if self.sample_data or isinstance(data, tuple):
             sources[DataSource.GENERATE] = "Timeseries in a selected range."
         if self.upload is not False:
-            limit = os.environ.get("STREAMLIT_SERVER_MAX_UPLOAD_SIZE", 200)
+            limit = stc.get_option("server.maxUploadSize")
             sources[DataSource.USER_UPLOAD] = f"Size limit {limit} MB."
         if (self.datasets and self.datasets.has_data) or isinstance(data, (int, str)):
             sources[DataSource.BUNDLED] = f"Select one of {self.datasets.size} included datasets."
