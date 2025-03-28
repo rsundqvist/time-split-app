@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "time-fold-explorer"
-version = "0.6.0"
+version = "0.6.2"
 description = "Companion app for the `time-split` library."
 authors = ["Richard Sundqvist <richard.sundqvist@live.se>"]
 

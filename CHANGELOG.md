@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2025-03-28
+
 ### Changed
-* Use `streamlit==1.44.0`.
+* Use more prominent error when no dataset is selected.
+
+## [0.6.1] - 2025-01-25
+
+### Changed
+* Use `streamlit==1.41.1`.
 * The Docker image is now multi-platform (`linux/amd64` + `linux/arm64`).
 * Dataset cache timeout (`DATASET_CACHE_TTL`) increased from 1 hour to 12 hours.
-* Use more prominent error when no dataset is selected.
 
 ### Fixed
 * All datasets are now properly reloaded when the configuration file changes (`DATASET_CONFIG_CACHE_TTL=30`)
@@ -28,5 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-fold-explorer/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-fold-explorer/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/rsundqvist/time-fold-explorer/compare/v0.6.1...v0.6.2
+[0.6.1]: https://github.com/rsundqvist/time-fold-explorer/compare/v0.6.0...v0.6.1
 [0.1.0]: https://github.com/rsundqvist/time-fold-explorer/compare/v0.0.0...v0.6.0
