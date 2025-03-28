@@ -1,5 +1,5 @@
 FROM python:3.12-slim AS build
-COPY README.md pyproject.toml poetry.lock src/ .
+COPY README.md pyproject.toml poetry.lock src/ ./
 RUN pip install --no-cache --compile .
 
 FROM python:3.12-slim AS app

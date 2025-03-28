@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-* Use `streamlit==1.41.1`.
+* Use `streamlit==1.44.0`.
 * The Docker image is now multi-platform (`linux/amd64` + `linux/arm64`).
 * Dataset cache timeout (`DATASET_CACHE_TTL`) increased from 1 hour to 12 hours.
 * Use more prominent error when no dataset is selected.

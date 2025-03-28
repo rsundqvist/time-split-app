@@ -72,7 +72,7 @@ def primary(
 
             used, avail = fold_overview_widget.get_data_utilization(splits, limits)
             st.caption(
-                f"Using `{fmt_sec(used)}` of `{fmt_sec(avail)}` (`{used / avail :.1%}`) of the available data range."
+                f"Using `{fmt_sec(used)}` of `{fmt_sec(avail)}` (`{used / avail:.1%}`) of the available data range."
             )
 
         with left:
@@ -121,5 +121,5 @@ def show_permalink(
         doc = "https://time-split.readthedocs.io/en/stable/generated/time_split.support.html#time_split.support.create_explorer_link"
         st.caption(
             f"Parameters may be [converted]({doc}) to equivalent values. "
-            "Note that `data` is called `available` by core library."
+            "Note that `data` is called `available` by the core library."
         )

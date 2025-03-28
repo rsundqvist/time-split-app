@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 [tool.poetry.urls]
@@ -32,15 +33,15 @@ classifiers = [
 python = ">=3.11"
 
 pandas = "~2.2.3"
-streamlit = "~1.41.1"
+streamlit = "~1.44.0"
 time-split = { version = "~0.6.0", extras = ["plotting"] }
 croniter = "~6.0.0"
 
 [tool.poetry.group.manual-extras.dependencies]
 # Extras that must be available for docs + tests go here. Doc/test-only deps go in their respective groups.
 
-pyarrow = ">=15.0.2,<17.0.0"
-polars = { version = "^0.20.19", extras = ["pandas"] }
+pyarrow = "~19.0.1"
+polars = { version = "~1.26.0", extras = ["pandas"] }
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.1.1"
@@ -55,7 +56,7 @@ s3fs = "2024.12.0"
 [tool.poetry.group.devops.dependencies]
 invoke = "^2.2.0"
 mypy = "^1.10.1"
-ruff = "^0.5.0"
+ruff = "~0.11.2"
 
 safety = "^3.2.3"
 codespell = "^2.3.0"
@@ -104,8 +105,6 @@ select = [
     "TRY",
 ]
 ignore = [
-    "ANN101", # Missing type annotation for `self` in method
-    "ANN102", # Missing type annotation for `cls` in method
     "D105", # Missing docstring in magic method
     "D107", # Missing docstring in `__init__`
     "ANN401",

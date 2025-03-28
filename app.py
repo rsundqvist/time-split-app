@@ -6,6 +6,8 @@ from time import perf_counter
 import streamlit as st
 from rics.logs import basic_config
 from rics.plotting import configure as configure_plotting
+from time_split import split
+
 from time_fold_explorer import _views, config
 from time_fold_explorer._logging import LOGGER, log_perf
 from time_fold_explorer._support import enforce_max_splits, get_about
@@ -18,7 +20,6 @@ from time_fold_explorer.widgets.display import (
 )
 from time_fold_explorer.widgets.parameters import SplitterKwargsWidget
 from time_fold_explorer.widgets.types import DataSource, QueryParams
-from time_split import split
 
 st.set_page_config(
     page_title="Time Told Explorer",

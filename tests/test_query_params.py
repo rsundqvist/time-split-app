@@ -5,6 +5,7 @@ changes manually.
 """
 
 import pytest
+
 from time_fold_explorer.widgets.types import QueryParams
 
 

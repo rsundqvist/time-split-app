@@ -214,7 +214,7 @@ class DataWidget:
 
         return (
             head,
-            f"Showing {'all' if n_df == n_head else 'the first'} `{pretty_head}` of `{pretty_df}` (`{n_head / n_df :.2%}`) rows.",
+            f"Showing {'all' if n_df == n_head else 'the first'} `{pretty_head}` of `{pretty_df}` (`{n_head / n_df:.2%}`) rows.",
         )
 
     def get_data_sources(self) -> dict[DataSource, str]:
@@ -257,7 +257,7 @@ class DataWidget:
             used = (end - start).total_seconds()
             st.caption(
                 f"You've selected `{fmt_sec(used)}` of `{fmt_sec(avail)}` "
-                f"(`{used / avail :.1%}`) of the total available data range."
+                f"(`{used / avail:.1%}`) of the total available data range."
             )
 
         df = df[start:end]
