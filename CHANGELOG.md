@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2025-07-16
+
 ### Added
 * Support several now user customizations
   - Data loaders (env: `DATASET_LOADER`)
@@ -43,7 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/rsundqvist/time-split-app/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/rsundqvist/time-split-app/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/rsundqvist/time-split-app/compare/v0.6.0...v0.6.1
 [0.1.0]: https://github.com/rsundqvist/time-split-app/compare/v0.0.0...v0.6.0

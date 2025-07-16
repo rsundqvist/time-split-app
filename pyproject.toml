@@ -1,6 +1,6 @@
 [project]
 name = "time-split-app"
-version = "0.6.2"
+version = "0.7.0"
 description = "Companion app for the `time-split` library."
 authors = [
     { name = "Richard Sundqvist", email = "richard.sundqvist@live.se" },
