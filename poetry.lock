@@ -3284,29 +3284,24 @@ test = ["pytest", "tornado (>=4.5)", "typeguard"]
 
 [[package]]
 name = "time-split"
-version = "0.6.0.dev1"
+version = "0.6.0"
 description = "Time-based k-fold validation splits for heterogeneous data."
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "time_split-0.6.0-py3-none-any.whl", hash = "sha256:0e1d3c7d3a73df983e29ffb6cfb811bb2c44fabe9026382bad2598bdf2b72bbe"},
+    {file = "time_split-0.6.0.tar.gz", hash = "sha256:663dee1df20968e16105ec0c3352d1a4ee90ac278f1e109a5a13c83897005490"},
+]
 
 [package.dependencies]
-matplotlib = {version = "*", optional = true}
+matplotlib = {version = "*", optional = true, markers = "extra == \"plotting\""}
 pandas = ">=2.0.3"
-rics = ">=5.1.0"
-seaborn = {version = "*", optional = true}
+rics = ">=4.1.1"
+seaborn = {version = "*", optional = true, markers = "extra == \"plotting\""}
 
 [package.extras]
-cli = ["click", "streamlit"]
 plotting = ["matplotlib", "seaborn"]
-
-[package.source]
-type = "git"
-url = "https://github.com/rsundqvist/time-split.git"
-reference = "HEAD"
-resolved_reference = "1b83e32cd6e61272fb7beb556fe8a8b0fda92402"
 
 [[package]]
 name = "toml"
@@ -3704,4 +3699,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "9bf7f089e775b24b41b5bcd39c7f3a36997c89842ed2601770288c2ffdfbed2d"
+content-hash = "1411e62fae64ec7a4cf110d50aa60eae73c5c0a0e1a4687a79e9dc552e618356"
