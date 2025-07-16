@@ -4,9 +4,12 @@ There are loads of ways that the app can fail that this doesn't even begin to co
 changes manually.
 """
 
-import pytest
+from datetime import datetime
 
-from time_fold_explorer.widgets.types import QueryParams
+import pytest
+from time_split.app import create_explorer_link
+
+from time_split_app.widgets.types import QueryParams
 
 
 @pytest.mark.parametrize(
@@ -34,11 +37,12 @@ def test_timestamps(data: str, expected: tuple[str, str]) -> None:
     assert end == expected_end
 
 
-@pytest.mark.skip(reason="Can't mock entry URL.")
-def test_link():
-    from datetime import datetime
-
-    from time_split.support import create_explorer_link
+def test_link(monkeypatch):
+    """Naive test. Proper way would be to use AppTest().query_params."""
+    monkeypatch.setattr(
+        "streamlit.query_params",
+        {"data": "1554942900-1557610200", "schedule": "1d", "after": "1", "show_removed": "True"},
+    )
 
     start = "2019-04-11T00:35:00"
     end = "2019-05-11T21:30:00"
@@ -54,7 +58,7 @@ def test_link():
     assert actual.show_removed is not None
     assert (
         create_explorer_link(
-            "http://localhost:8501",
+            "http://localhost:8501/",
             (start, end),
             schedule=actual.schedule,
             after=actual.after,

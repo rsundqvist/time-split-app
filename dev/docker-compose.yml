@@ -1,0 +1,21 @@
+name: time-split
+
+services:
+  app:
+    image: time-split:dev
+    ports:
+      - "8501:8501"
+    env_file: ./.env
+    environment:
+      EXTRA_PIP_PACKAGES: s3fs
+    network_mode: host
+    volumes:
+      - ./data/remote-datasets.toml:/home/streamlit/datasets.toml:ro
+      - ../app_extensions.py:/home/streamlit/app_extensions.py:ro
+
+  minio:
+    image: minio/minio:latest
+    entrypoint: [ "minio", "server", "--address", "0.0.0.0:9000", "--console-address", "0.0.0.0:9001", "/data" ]
+    ports:
+      - "9000:9000"
+      - "9001:9001"

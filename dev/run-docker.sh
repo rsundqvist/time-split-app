@@ -2,13 +2,17 @@
 
 set -eux
 
+
 docker build . -t time-split:dev
 
-# python dev/update-datasets.py remote .gzip
+
 dir=$(dirname "$0")
-docker run --network=host \
+docker run \
+  --rm \
+  -p 8501:8501 \
+  --network=host \
   --env-file "$dir/.env" \
-  --env EXTRA_PIP_PACKAGES=s3fs \
-  --env DATASETS_CONFIG_PATH="/home/streamlit/datasets.toml" \
-  -v "$dir/data/remote-datasets.toml:/home/streamlit/datasets.toml" \
+  --env EXTRA_PIP_PACKAGES="s3fs mplcyberpunk" \
+  -v "$dir/data/remote-datasets.toml:/home/streamlit/datasets.toml:ro" \
+  -v ./app_extensions.py:/home/streamlit/app_extensions.py:ro \
   time-split:dev

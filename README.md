@@ -20,19 +20,41 @@ Folds plotted on a two-by-two grid. See the
 [examples](https://time-split.readthedocs.io/en/stable/auto_examples/index.html) page for more.
 
 # About this image
-The **Time Fold Explorer** application
+
+The **Time Split** application
 (available [here](https://time-split.streamlit.app/?data=1554942900-1557610200&schedule=0+0+%2A+%2A+MON%2CFRI&n_splits=2&step=2&show_removed=True))
 is designed to help evaluate the effects of different
 [parameters](https://time-split.readthedocs.io/en/stable/#parameter-overview).
-To start it locally using
-[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/rsundqvist/time-split/latest?logo=docker&label=time-split)](https://hub.docker.com/r/rsundqvist/time-split/)
-Docker, run
+To start it locally, run
 ```sh
 docker run -p 8501:8501 rsundqvist/time-split
 ```
+or 
+```bash
+pip install time-split[app]
+python -m time_split app start
+```
 in the terminal. You may use
-[`create_explorer_link()`](https://time-split.readthedocs.io/en/stable/generated/time_split.support.html#time_split.support.create_explorer_link)
+[`create_explorer_link()`](https://time-split.readthedocs.io/en/stable/api/time_split.app.html#time_split.app.create_explorer_link)
 to build application URLs with preselected splitting parameters.
+
+# Custom dataset loaders
+Dataset loaders are a flexible way to load or create datasets that requires user input. The existing images (`>=0.7.0`)
+can be extended to use custom loaders:
+
+```Dockerfile
+FROM python:3.13
+
+RUN pip install --no-cache --compile time-split[app]
+RUN pip install --no-cache --compile your-dependencies
+
+ENV DATASET_LOADER=custom_dataset_loader:CustomDatasetLoader
+COPY custom_dataset_loader.py .
+
+# Entrypoint etc.
+```
+
+Loaders must implement the `DataLoaderWidget` interface.
 
 # Custom datasets
 To bundle datasets, mount a configuration file (determined by 
@@ -94,7 +116,7 @@ in the terminal. The [tomli-w](https://pypi.org/project/tomli-w/) package may be
 All datasets are reloaded immediately if the configuration changes, ignoring comments and formatting.
 
 # Environment variables
-See [config.py](src/time_fold_explorer/config.py) for configurable values. Use `true|false` for boolean variables. 
+See [config.py](src/time_split_app/config.py) for configurable values. Use `true|false` for boolean variables. 
 Documentation for the underlying framework (Streamlit) is available 
 [here](https://docs.streamlit.io/develop/concepts/configuration/options/).
 

@@ -1,0 +1,4 @@
+[ok]
+path = "./data.csv.zip"
+read_function_kwargs = { index_col = "date", parse_dates = true }
+aggregations = { x = "sum" }

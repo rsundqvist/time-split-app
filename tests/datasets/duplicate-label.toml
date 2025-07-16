@@ -1,0 +1,6 @@
+[ok]
+path = "ok.csv"
+
+[explicit-label]
+label = "ok"
+path = "whatever.csv"

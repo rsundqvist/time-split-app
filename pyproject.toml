@@ -1,12 +1,12 @@
-[tool.poetry]
-name = "time-fold-explorer"
+[project]
+name = "time-split-app"
 version = "0.6.2"
 description = "Companion app for the `time-split` library."
-authors = ["Richard Sundqvist <richard.sundqvist@live.se>"]
-
+authors = [
+    { name = "Richard Sundqvist", email = "richard.sundqvist@live.se" },
+]
+license = { text = "MIT" }
 readme = "README.md"
-homepage = "https://github.com/rsundqvist/time-fold-explorer"
-repository = "https://github.com/rsundqvist/time-fold-explorer"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -22,26 +22,31 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
+requires-python = ">=3.11"
 
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/rsundqvist/time-fold-explorer/issues"
-"Changelog" = "https://github.com/rsundqvist/time-fold-explorer/blob/master/CHANGELOG.md"
+dependencies = [
+    "pandas                  >= 2.2.3",
+    "streamlit               >= 1.44.1",
+    "croniter                >= 6.0.0",
+    "rics                    >= 6.0.1",
+    "time-split[plotting]    @ git+https://github.com/rsundqvist/time-split.git",
+]
 
-[tool.poetry.scripts]
-
-[tool.poetry.dependencies]
-python = ">=3.11"
-
-pandas = "~2.2.3"
-streamlit = "~1.44.0"
-time-split = { version = "~0.6.0", extras = ["plotting"] }
-croniter = "~6.0.0"
+[project.urls]
+homepage = "https://github.com/rsundqvist/time-split-app"
+repository = "https://github.com/rsundqvist/time-split-app"
+documentation = "https://time-fold.readthedocs.io"
+"Bug Tracker" = "https://github.com/rsundqvist/time-split-app/issues"
+"Changelog" = "https://github.com/rsundqvist/time-split-app/blob/master/CHANGELOG.md"
 
 [tool.poetry.group.manual-extras.dependencies]
 # Extras that must be available for docs + tests go here. Doc/test-only deps go in their respective groups.
 
 pyarrow = "~19.0.1"
 polars = { version = "~1.26.0", extras = ["pandas"] }
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.8"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.1.1"
@@ -55,12 +60,12 @@ s3fs = "2024.12.0"
 
 [tool.poetry.group.devops.dependencies]
 invoke = "^2.2.0"
-mypy = "^1.10.1"
-ruff = "~0.11.2"
+mypy = "~1.17.0"
+ruff = "~0.12.3"
 
-safety = "^3.2.3"
-codespell = "^2.3.0"
-bump2version = "^1.0.1"
+safety = "~3.6.0"
+codespell = "~2.4.1"
+bump2version = "==1.0.1"
 
 [tool.ruff]
 line-length = 120

@@ -1,9 +1,9 @@
 # Contributing <!-- omit in toc -->
 
-First of all, thank you for using and contributing to `time-fold-explorer`! Any and all contributions are welcome.
+First of all, thank you for using and contributing to `time-split-app`! Any and all contributions are welcome.
 
 ## Creating issues
-Issues are tracked on [GitHub](https://github.com/rsundqvist/time-fold-explorer/issues). Issue
+Issues are tracked on [GitHub](https://github.com/rsundqvist/time-split-app/issues). Issue
 reports are appreciated, but please use a succinct title and add relevant tags.
 Please include a [**Minimal reproducible example**][minimal-reproducible-example]
 if reporting an issue, or sample snippet if requesting a new feature or change 
@@ -16,7 +16,7 @@ Follow these steps to begin local development.
 
 1. **Installing [Poetry](https://python-poetry.org/docs/)**
    
-   See [poetry.lock](https://github.com/rsundqvist/time-fold-explorer/blob/master/poetry.lock) for the version used.
+   See [poetry.lock](https://github.com/rsundqvist/time-split-app/blob/master/poetry.lock) for the version used.
    ```bash
    curl -sSL https://install.python-poetry.org/ | python -
    ```
@@ -26,8 +26,8 @@ Follow these steps to begin local development.
    Clone and install the virtual environment used for development. Some material
    is placed in submodules, so we need to clone recursively.
    ```bash
-   git clone --recurse-submodules git@github.com:rsundqvist/time-fold-explorer.git
-   cd time-fold-explorer
+   git clone --recurse-submodules git@github.com:rsundqvist/time-split-app.git
+   cd time-split-app
    poetry install --all-extras
    ```
    
@@ -48,4 +48,4 @@ docs). For example, running
 act -j tests
 ```
 
-will execute the [tests](https://github.com/rsundqvist/time-fold-explorer/blob/master/.github/workflows/tests.yml) workflow.
+will execute the [tests](https://github.com/rsundqvist/time-split-app/blob/master/.github/workflows/tests.yml) workflow.

@@ -11,8 +11,8 @@ import tomli_w
 from rics.logs import disable_temporarily
 
 with disable_temporarily("streamlit.runtime.caching.cache_data_api"):
-    from time_fold_explorer.widgets.data import SampleDataWidget
-    from time_fold_explorer.widgets.types import DatasetConfig
+    from time_split_app.datasets import DatasetConfig
+    from time_split_app.widgets.data import SampleDataWidget
 
 ROOT = Path(__file__).parent
 WRITERS = {
@@ -50,7 +50,7 @@ WRITERS = {
     help="Compression type to use, if any.",
 )
 def main(remote: bool, local: bool, compression: str) -> None:
-    df = SampleDataWidget.load_sample_data(end="2019-05-11 20:30", n_rows=10000).reset_index()
+    df = SampleDataWidget.generate_sample_data(end="2019-05-11 20:30", n_rows=10_000).reset_index()
 
     compression = None if compression == "none" else compression
     if local:
@@ -85,7 +85,7 @@ def upload_remote(df: pd.DataFrame, compression: str | None) -> None:
 def upload(df: pd.DataFrame, data_root: str, name: str, compression: str | None) -> None:
     start = perf_counter()
 
-    now = datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0).isoformat()
+    now = datetime.datetime.now(tz=datetime.UTC).replace(microsecond=0).isoformat()
 
     configs = []
     for suf, writer in WRITERS.items():

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* Support several now user customizations
+  - Data loaders (env: `DATASET_LOADER`)
+  - Split params selection function (env: `SPLIT_SELECT_FN`)
+  - Plotting function (env: `PLOT_FN`)
+  - Link function (env: `LINK_FN`)
+* Make installable as an extra; `time-split[app]`
+* New CLI, e.g. `python -m time_split app start`.
+
 ## [0.6.2] - 2025-03-28
 
 ### Changed
@@ -34,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-fold-explorer/compare/v0.6.2...HEAD
-[0.6.2]: https://github.com/rsundqvist/time-fold-explorer/compare/v0.6.1...v0.6.2
-[0.6.1]: https://github.com/rsundqvist/time-fold-explorer/compare/v0.6.0...v0.6.1
-[0.1.0]: https://github.com/rsundqvist/time-fold-explorer/compare/v0.0.0...v0.6.0
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/rsundqvist/time-split-app/compare/v0.6.1...v0.6.2
+[0.6.1]: https://github.com/rsundqvist/time-split-app/compare/v0.6.0...v0.6.1
+[0.1.0]: https://github.com/rsundqvist/time-split-app/compare/v0.0.0...v0.6.0

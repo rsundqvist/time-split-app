@@ -33,6 +33,6 @@ def verify_frames(runner: AppTest) -> None:
         (12, ["fold_no", "fold", "dataset", "column 0", "column 1", "column 2", "n_rows", "n_hours"]),
         (1000, ["timestamp", "column 0", "column 1", "column 2"]),
         (2, ["FIGURE_DPI", "PLOT_RAW_TIMESERIES", "PLOT_AGGREGATIONS_PER_FOLD", "MAX_SPLITS"]),
-        (1, ["Rows", "Cols", "Start", "Span", "End", "Size"]),
+        (1, ["Rows", "Cols", "Start", "Span", "End"]),
         (2, ["Index", "Original", "Change", "Expanded"]),
     ]

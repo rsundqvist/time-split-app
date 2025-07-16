@@ -1,0 +1,3 @@
+[class*="tight-rows"] * {
+    row-gap: 1px;
+}
