@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- New command `python -m time_split app new` - creates template project.
+
+### Fixed
+- Fixed `time-split` dependency version.
+
 ## [0.7.0] - 2025-07-16
 
 ### Added

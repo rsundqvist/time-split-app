@@ -10,6 +10,7 @@ jupyterlab/data-cache/*
 docs/**/notebooks/
 docs/generated/*
 docs/changelog/*
+my-time-split-app/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -10,10 +10,10 @@ from time_split_app.widgets.types import PlotFn
 @st.cache_resource
 def get_user_plot_fn() -> PlotFn | None:
     value = config.PLOT_FN
-    return create_custom_data_loader(value) if value else None
+    return _from_user_spec(value) if value else None
 
 
-def create_custom_data_loader(value: str) -> PlotFn:
+def _from_user_spec(value: str) -> PlotFn:
     logger = logging.getLogger(__package__)
     logger.info(f"Resolving plot() implementation from PLOT_FN={value!r}.")
 

@@ -9,10 +9,10 @@ from time_split_app import config
 @st.cache_resource
 def from_env_entrypoint() -> DataLoaderWidget | None:
     value = config.DATASET_LOADER
-    return create_custom_data_loader(value) if value else None
+    return _from_user_spec(value) if value else None
 
 
-def create_custom_data_loader(value: str) -> DataLoaderWidget:
+def _from_user_spec(value: str) -> DataLoaderWidget:
     logging.getLogger(__package__).info(f"Resolving DataLoaderWidget implementation from DATASET_LOADER={value!r}.")
 
     module_name, _, attribute_name = value.partition(":")

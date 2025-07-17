@@ -1,6 +1,7 @@
 """CLI entrypoint."""
 
 import logging
+import stat
 import subprocess
 from pathlib import Path
 
@@ -34,6 +35,30 @@ def start() -> None:
 
     click.secho(" ".join(cmd), fg="green")
     subprocess.run(cmd, check=False)  # noqa: S603
+
+
+@main.command(name="new")
+@click.option(
+    "--out",
+    default="my-time-split-app",
+    type=str,
+    help="Output directory.",
+)
+def new(out: str) -> None:
+    """Create app from template."""
+    files = ["Dockerfile", "entrypoint.sh", "my_extensions.py", "README.md"]
+
+    root = Path(out)
+    root.mkdir(exist_ok=False, parents=True)
+
+    for f in files:
+        src = Path(__file__).parent.joinpath("new", f)
+        dst = root.joinpath(f)
+
+        dst.write_bytes(src.read_bytes())
+        dst.chmod(src.stat().st_mode | stat.S_IWUSR)
+
+    click.secho(f"Project directory '{out}' created. See the README to get started.", fg="green")
 
 
 def _get_app_path() -> Path:

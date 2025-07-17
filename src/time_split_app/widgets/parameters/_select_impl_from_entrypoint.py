@@ -10,10 +10,10 @@ from time_split_app.widgets.types import SelectSplitParams
 @st.cache_resource
 def get_user_select_fn() -> SelectSplitParams | None:
     value = config.SPLIT_SELECT_FN
-    return create_custom_data_loader(value) if value else None
+    return _from_user_spec(value) if value else None
 
 
-def create_custom_data_loader(value: str) -> SelectSplitParams:
+def _from_user_spec(value: str) -> SelectSplitParams:
     logger = logging.getLogger(__package__)
     logger.info(f"Resolving select_split_params() implementation from SPLIT_SELECT_FN={value!r}.")
 
