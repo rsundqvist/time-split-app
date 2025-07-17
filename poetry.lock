@@ -3284,23 +3284,24 @@ test = ["pytest", "tornado (>=4.5)", "typeguard"]
 
 [[package]]
 name = "time-split"
-version = "0.6.0"
+version = "0.7.0"
 description = "Time-based k-fold validation splits for heterogeneous data."
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "time_split-0.6.0-py3-none-any.whl", hash = "sha256:0e1d3c7d3a73df983e29ffb6cfb811bb2c44fabe9026382bad2598bdf2b72bbe"},
-    {file = "time_split-0.6.0.tar.gz", hash = "sha256:663dee1df20968e16105ec0c3352d1a4ee90ac278f1e109a5a13c83897005490"},
+    {file = "time_split-0.7.0-py3-none-any.whl", hash = "sha256:85edb175ab23e7b59641fcaf05f530f6801ae8e5f0f11eb6f11b03963cb9a8db"},
+    {file = "time_split-0.7.0.tar.gz", hash = "sha256:82c43d421386ce8d36b6d55ba1cf229ad23fc5b93c2e14f748ef37dca2f7295a"},
 ]
 
 [package.dependencies]
 matplotlib = {version = "*", optional = true, markers = "extra == \"plotting\""}
 pandas = ">=2.0.3"
-rics = ">=4.1.1"
+rics = ">=6.0.1"
 seaborn = {version = "*", optional = true, markers = "extra == \"plotting\""}
 
 [package.extras]
+app = ["click", "time-split-app"]
 plotting = ["matplotlib", "seaborn"]
 
 [[package]]
@@ -3699,4 +3700,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "1411e62fae64ec7a4cf110d50aa60eae73c5c0a0e1a4687a79e9dc552e618356"
+content-hash = "589a85ecad03afe163a0e177ea87f0d09cbe3b83a0ea7235c952c8ecf1da77a8"
