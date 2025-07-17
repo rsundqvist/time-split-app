@@ -3284,14 +3284,14 @@ test = ["pytest", "tornado (>=4.5)", "typeguard"]
 
 [[package]]
 name = "time-split"
-version = "0.7.0"
+version = "0.7.1"
 description = "Time-based k-fold validation splits for heterogeneous data."
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "time_split-0.7.0-py3-none-any.whl", hash = "sha256:85edb175ab23e7b59641fcaf05f530f6801ae8e5f0f11eb6f11b03963cb9a8db"},
-    {file = "time_split-0.7.0.tar.gz", hash = "sha256:82c43d421386ce8d36b6d55ba1cf229ad23fc5b93c2e14f748ef37dca2f7295a"},
+    {file = "time_split-0.7.1-py3-none-any.whl", hash = "sha256:f12a19354bd321381676d34d0b73c34a50376fe68bb4e88234261996d6c0c5f2"},
+    {file = "time_split-0.7.1.tar.gz", hash = "sha256:ac1ea9f6370d7387cf71aaf02a550964f25dfc6224dda355eefa3267619c92ef"},
 ]
 
 [package.dependencies]
@@ -3700,4 +3700,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "589a85ecad03afe163a0e177ea87f0d09cbe3b83a0ea7235c952c8ecf1da77a8"
+content-hash = "aea3027628ba105229e5bde37a93b8106e3bd2d74a8dd0e6d90eed675119dde4"

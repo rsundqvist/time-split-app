@@ -6,7 +6,7 @@ RUN apt-get update && \
     curl tini=0.19.* \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN pip install time-split[plotting,app]==0.7.0
+RUN pip install time-split[app]
 
 # RUN pip install s3fs  # Your dependencies go here
 

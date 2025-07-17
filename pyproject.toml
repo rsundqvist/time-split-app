@@ -25,11 +25,16 @@ classifiers = [
 requires-python = ">=3.11"
 
 dependencies = [
-    "pandas                  >= 2.2.3",
     "streamlit               >= 1.44.1",
-    "croniter                >= 6.0.0",
+    "pandas                  >= 2.2.3",
     "rics                    >= 6.0.1",
+    # Core lib dependencies
     "time-split[plotting]    >= 0.7.0",
+    "croniter                >= 6.0.0",  # Required fron CRON-schedules; must be added manually by the user.
+    # Pip doesn't seem to consider extra dependencies on circular top-level dependencies, so we add the plotting deps
+    # manually here (without specifying versions) just in case.
+    "matplotlib",
+    "seaborn",
 ]
 
 [project.urls]
