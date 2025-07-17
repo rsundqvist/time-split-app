@@ -42,8 +42,10 @@ class MyDatasetLoader(DataLoaderWidget):
             params: Parameter preset as bytes. Handling is implementation-specific.
 
         Returns:
-            A pandas DataFrame or a tuple ``(data, aggregations, params)``, where the ``bytes`` may be given as `params`
-            to recreate the frame returned.
+            A :class:`pandas.DataFrame` or a tuple ``(data, aggregations, params)``, where the ``params: bytes`` may be given as
+            the `params` argument to recreate the frame returned.
+
+        See :attr:`.QueryParams.data` for more information regarding the `params` argument.
         """
         if params:
             raise NotImplementedError(f"{params=}")

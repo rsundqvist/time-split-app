@@ -20,7 +20,7 @@ class Dataset(DatasetConfig):
 
 
 def load_dataset(config: DatasetConfig) -> Dataset:
-    """Load dataset config.
+    """Load dataset from config.
 
     Args:
         config: A dataset configuration object.

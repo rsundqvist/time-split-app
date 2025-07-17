@@ -18,11 +18,11 @@ if TYPE_CHECKING:
 from time_split.types import DatetimeIndexSplitterKwargs
 
 SelectSplitParams = Callable[[], DatetimeIndexSplitterKwargs]
-"""A callable ``() -> DatetimeIndexSplitterKwargs``."""
+"""A callable ``() -> DatetimeIndexSplitterKwargs``; see :func:`time_split.split`."""
 PlotFn = Callable[..., "Axes"]
-"""A callable that mimics interface of time_split.plot()."""
+"""A callable that mimics interface of :func:`time_split.plot`."""
 LinkFn = Callable[..., str]
-"""A callable that mimics interface of time_split.app.create_explorer_link()."""
+"""A callable that mimics interface of :func:`time_split.app.create_explorer_link`."""
 
 
 class DataSource(StrEnum):
@@ -98,11 +98,11 @@ class QueryParams:
 
     For example http://localhost:8501/?n_splits=3&step=3&show_removed=true will give
 
-    >>> QueryParams(step=3, n_splits=3, show_removed=True)
+    .. code-block::
 
-    http://localhost:8501/?n_splits=3&step=3&show_removed=true&dataset=data.json.gzip
+       QueryParams(step=3, n_splits=3, show_removed=True, ...)
 
-    These are later used to set the initial values in various widgets.
+    The params are later used to set the initial values in various widgets.
     """
 
     schedule: str | None = None
@@ -115,16 +115,26 @@ class QueryParams:
     show_removed: bool | None = None
     data: int | str | bytes | tuple[datetime, datetime] | None = None
     """Data selection.
-
-    If an ``int`` or ``str``, it is assumed to refer to a :attr:`DatasetConfig.label`, either by index or by the label
-    itself. Labels are normalized using :meth:`normalize_dataset`.
-
-    May also be a tuple of UNIX timestamps, specified on the form ``<start>-<stop>``, e.g. ``1556668800-1557606600``
-    for a range ``('2019-05-01T00:00:00z', '')``. Tuples are converted using :meth:`convert_timestamps`. Note that
-    timestamps are coerced into 5-minute increments as naive UTC timestamps.
     
-    If ``bytes``, these are assumed by the the parameters of a custom dataset widget; the bytes will be forwarded to the
-    ``load()``-method of the implementation.
+    Built-in data loaders:
+        If an ``int`` or ``str``, it is assumed to refer to a :attr:`.DatasetConfig.label`, either by index or by the
+        label itself. Labels are normalized using :meth:`normalize_dataset`.
+    
+        May also be a tuple of UNIX timestamps, specified on the form ``<start>-<stop>``, e.g. ``1556668800-1557606600``
+        for a range ``('2019-05-01T00:00:00z', '2019-05-11T20:30:00z')``. Tuples are converted using 
+        :meth:`convert_timestamps`. Note that timestamps are coerced into 5-minute increments as naive UTC timestamps.
+        
+        This is managed automatically when using the bundled functions.
+    
+    Custom data loaders:
+        If ``bytes``, these are assumed by the the parameters of a custom :class:`.DataLoaderWidget`; the bytes will be
+        forwarded to the ``load()``-method of the implementation as-is.
+        
+        The ``bytes`` data is round tripped (as a base 16 string prefixed by `0x`) when using permalinks; serialization,
+        deserialization and validation of the actual content is the responsibility of the implementation.
+        
+    See Also:
+        The :func:`.create_explorer_link` function.
     """
 
     @classmethod

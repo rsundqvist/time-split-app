@@ -25,11 +25,11 @@ class DatasetConfig:
     index: str = USE_ORIGINAL_INDEX
     """Index column. Must be datetime-like.
 
-    Use ``'__INDEX__'`` if the dataset already has a suitable index.
+    Use ``'__INDEX__'`` (default) if the dataset already has a suitable index.
     """
 
     aggregations: dict[str, str] = field(default_factory=dict)
-    """Column aggregations. Default column aggregations. Users may override these in the UI."""
+    """Default column aggregations known to pandas, e.g. ``{'my-column': 'max'}``. Users may override these in the UI."""
 
     description: str = ""
     """A longer dataset description for the UI (Markdown). The first row will be used as a summary."""
@@ -44,7 +44,7 @@ class DatasetConfig:
 def load_dataset_configs(file: AnyPath) -> list[DatasetConfig]:
     """Read dataset configs from file.
 
-    Returns on config object per top-level section in `file`.
+    Returns one :class:`.DatasetConfig` object per top-level section in `file`.
 
     Args:
         file: Path to a TOML file.

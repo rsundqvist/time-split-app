@@ -38,6 +38,10 @@ in the terminal. You may use
 [`create_explorer_link()`](https://time-split.readthedocs.io/en/stable/api/time_split.app.html#time_split.app.create_explorer_link)
 to build application URLs with preselected splitting parameters.
 
+# Documentation
+Click [here](https://time-split.readthedocs.io/en/stable/api/time_split.app.reexport.html) for documentation of the most
+important types, functions and classes used by the application.
+
 # Custom dataset loaders
 Dataset loaders are a flexible way to load or create datasets that requires user input. The existing images (`>=0.7.0`)
 can be extended to use custom loaders:

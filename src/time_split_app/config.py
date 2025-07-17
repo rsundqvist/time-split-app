@@ -45,14 +45,14 @@ PERFORMANCE_LOG_LEVEL: int = env.read_int("DISABLE_PERFORMANCE_LOGGING", 20)
 
 # Image extensions.
 DATASET_LOADER: str = env.read_str("DATASET_LOADER")
-"""A customer loader implementation.
+"""A custom loader implementation.
 
 Type: time_split.widgets.DataLoaderWidget
 Format: `path.to.module:ClassName`.
 """
 
 SPLIT_SELECT_FN: str = env.read_str("SPLIT_SELECT_FN")
-"""Custom split parameters selection function.
+"""Custom splitting parameters selection function.
 
 Type: `() -> DatetimeIndexSplitterKwargs`.
 Format: `path.to.module:func_name`.
