@@ -9,14 +9,14 @@ import streamlit as st
 from time_split_app.widgets import DataLoaderWidget
 
 NAME = "Composite wave"
+_DOCS = "https://time-split.readthedocs.io/en/stable/api"
 
 class CustomLoader(DataLoaderWidget):
     def get_title(self) -> str:
         return "🎉 Use custom loader"
 
     def get_description(self) -> str:
-        url = f"https://time-split.readthedocs.io/en/stable/generated/{__name__}.html"
-        return f"""Click [here]({url}) to create your own."""
+        return f"""Click [here]({_DOCS}/time_split.app.html#getting-started) to create your own."""
 
     def load(self, params: bytes | None) -> tuple[pd.DataFrame, dict[str, str], bytes]:
         if params:
@@ -144,9 +144,9 @@ def add_guide():
 
         text = f"""
         Custom plots may be used by setting the `PLOT_FN` environment variable.
-        The new plotting function should provide the same interface as the
-        [original](https://time-split.readthedocs.io/en/stable/api/time_split.html#time_split.plot)
-        `time_split.plot()` function.
+        The new plotting function should provide the same interface as the original
+        [time_split.plot()]({_DOCS}/time_split.html#time_split.plot)
+        function.
         
         For this example, we've
         * mounted `{file}`, and
@@ -156,8 +156,7 @@ def add_guide():
         """
         st.write(text)
 
-    base = DataLoaderWidget
-    title = f"This app uses a custom :primary[*{base.__name__}*] implementation."
+    title = f"This app uses a custom :primary[*{DataLoaderWidget.__name__}*] implementation."
     with right.popover(title, icon="ℹ️", use_container_width=True):
         st.subheader("Custom Data Loader widgets.", divider=True)
 
@@ -165,7 +164,7 @@ def add_guide():
 
         text = f"""
         Custom loaders may be used by setting the `DATASET_LOADER` environment variable. The loader should implement the
-        `{base.__qualname__}` API."""
+        [DataLoaderWidget]({_DOCS}/time_split.app.reexport.html#time_split.app.reexport.DataLoaderWidget) API."""
         st.write(text)
 
         text = f"""
