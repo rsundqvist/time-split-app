@@ -4,25 +4,29 @@ from collections.abc import Iterable
 import pandas as pd
 import streamlit as st
 
+from time_split_app import config
+
 
 class DurationWidget:
     """Duration specified by unit and count.
 
     Args:
         default_unit: Default unit. Must be in `units`. Default is ``units[0]``.
-        units: An iterable of permitted units.
+        units: An iterable of permitted units. Default is determined by ``config.DATE_ONLY``.
         default_periods: Default period counts per unit.
     """
 
     def __init__(
         self,
         default_unit: str | None = None,
-        units: Iterable[str] = ("days", "hours", "minutes"),
+        units: Iterable[str] | None = None,
         default_periods: dict[str, int] | None = None,
     ) -> None:
         units = (*units,)
 
-        if not units:
+        if units is None:
+            units = ("days",) if config.DATE_ONLY else ("days", "hours", "minutes")
+        elif not units:
             raise ValueError("Need at least one unit.")
 
         if default_unit is None:
@@ -67,6 +71,7 @@ class DurationWidget:
                 options=self._units,
                 index=self._units.index(self._unit),
                 label_visibility="collapsed",
+                disabled=len(self._units) == 1,
             )
             assert isinstance(unit, str)
 

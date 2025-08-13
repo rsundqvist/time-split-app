@@ -50,6 +50,9 @@ CONFIGURE_LOGGING = env.read_bool("CONFIGURE_LOGGING", True)
 PERFORMANCE_LOG_LEVEL: int = env.read_int("PERFORMANCE_LOG_LEVEL", 20)
 """Set to modify log level for the `time_split_app.performance` logger. The default is logging.INFO=20."""
 
+DATE_ONLY: bool = env.read_bool("DATE_ONLY", True)
+"""If ``True``, lock set the app in `date_only` mode wherever possible."""
+
 # Image extensions.
 DATASET_LOADER: str = env.read_str("DATASET_LOADER")
 """A custom loader implementation.

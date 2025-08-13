@@ -7,6 +7,8 @@ import pandas as pd
 import streamlit as st
 from rics.types import LiteralHelper
 
+from time_split_app import config
+
 AnyDateRange = tuple[datetime, datetime] | tuple[date, date]
 Anchor = Literal["absolute", "relative", "now"]
 AnchorOptions = Collection[Anchor]
@@ -15,6 +17,8 @@ ANCHOR_HELPER: LiteralHelper[Anchor] = LiteralHelper(Anchor, default_name="ancho
 ABSOLUTE = "absolute"
 NOW = "now"
 RELATIVE = "relative"
+
+DATE_ONLY = config.DATE_ONLY
 
 
 class DataLoaderWidget(abc.ABC):
@@ -80,7 +84,7 @@ class DataLoaderWidget(abc.ABC):
         cls,
         initial: AnyDateRange | None = None,
         *,
-        date_only: bool = False,
+        date_only: bool = DATE_ONLY,
         start_options: AnchorOptions | None = None,
         end_options: AnchorOptions | None = None,
     ) -> AnyDateRange:

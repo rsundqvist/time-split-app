@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * Options `config.CONFIGURE_PLOTTING` and `CONFIGURE_LOGGING` (default=`true` for both).
+* Option `config.DATE_ONLY` (default=`true`).
 
 ### Changed
 * Bump PyPI `Development Status` classifier.
