@@ -8,7 +8,7 @@ authors = [
 license = { text = "MIT" }
 readme = "README.md"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Operating System :: POSIX :: Linux",
@@ -25,14 +25,15 @@ classifiers = [
 requires-python = ">=3.11"
 
 dependencies = [
-    "streamlit               >= 1.44.1",
-    "pandas                  >= 2.2.3",
-    "rics                    >= 6.0.1",
+    "streamlit               >= 1.47.1",
+    "pandas                  >= 2.0.3",
+    "rics                    >= 6.0.2",
     # Core lib dependencies
     "time-split[plotting]    >= 0.7.0",
-    "croniter                >= 6.0.0",  # Required fron CRON-schedules; must be added manually by the user.
-    # Pip doesn't seem to consider extra dependencies on circular top-level dependencies, so we add the plotting deps
-    # manually here (without specifying versions) just in case.
+    "croniter                >= 6.0.0",
+    # pip doesn't seem to consider extra dependencies on circular top-level dependencies
+    #   time-split[app] -> time-split-app -> time-split[plotting]
+    # Add the plotting deps manually here (without specifying versions) just in case.
     "matplotlib",
     "seaborn",
 ]
@@ -48,25 +49,25 @@ documentation = "https://time-fold.readthedocs.io"
 # Extras that must be available for docs + tests go here. Doc/test-only deps go in their respective groups.
 
 pyarrow = "~19.0.1"
-polars = { version = "~1.26.0", extras = ["pandas"] }
+polars = { version = "~1.32.2", extras = ["pandas"] }
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^8.1.1"
-coverage = "^7.4.4"
-pytest-cov = "^5.0.0"
+pytest = "~8.4.1"
+coverage = "~7.10.3"
+pytest-cov = "~6.2.1"
 
 # Needed for manual testing using dev-scripts, namely the dev/update-datasets.py.
-click = "~8.1.8"
+click = "~8.2.1"
 tomli-w = "~1.2.0"
-s3fs = "2024.12.0"
+s3fs = "2025.7.0"
 
 [tool.poetry.group.devops.dependencies]
-invoke = "^2.2.0"
-mypy = "~1.17.0"
-ruff = "~0.12.3"
+invoke = "~2.2.0"
+mypy = "~1.17.1"
+ruff = "~0.12.8"
 
 safety = "~3.6.0"
 codespell = "~2.4.1"
