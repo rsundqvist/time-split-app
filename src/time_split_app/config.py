@@ -30,7 +30,8 @@ DATASET_RADIO_LIMIT: int = env.read_int("DATASET_RADIO_LIMIT", 3)
 """Maximum number of dataset options to show as radio buttons.
 
 Radio buttons are shown with one-line descriptions and all options visible at once. If this limit is exceeded, the UI
-shows a label-only dropdown menu instead."""
+shows a label-only dropdown menu instead. Set to zero to always use the dropdown menu.
+"""
 ENABLE_DATA_GENERATOR: bool = env.read_bool("ENABLE_DATA_GENERATOR", True)
 """Set to ``False`` to disable the built-in dataset generator."""
 
@@ -40,7 +41,13 @@ PERMALINK_BASE_URL: str = env.read_str("PERMALINK_BASE_URL")
 """Public base address for the application. Used to create permalinks."""
 USE_CUSTOM_CSS: bool = env.read_bool("USE_CUSTOM_CSS", True)
 """Disable to use the default Streamlit styling."""
-PERFORMANCE_LOG_LEVEL: int = env.read_int("DISABLE_PERFORMANCE_LOGGING", 20)
+
+CONFIGURE_PLOTTING = env.read_bool("CONFIGURE_PLOTTING", True)
+"""Set to ``False`` to disable the default plotting style setup."""
+
+CONFIGURE_LOGGING = env.read_bool("CONFIGURE_LOGGING", True)
+"""Set to ``False`` to disable the default logging setup."""
+PERFORMANCE_LOG_LEVEL: int = env.read_int("PERFORMANCE_LOG_LEVEL", 20)
 """Set to modify log level for the `time_split_app.performance` logger. The default is logging.INFO=20."""
 
 # Image extensions.

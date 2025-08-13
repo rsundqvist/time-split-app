@@ -4,12 +4,11 @@ import logging
 from time import perf_counter
 
 import streamlit as st
-from rics.logs import basic_config
 from rics.plotting import configure as configure_plotting
 from time_split import split
 
 from time_split_app import _views, config, style
-from time_split_app._logging import LOGGER, log_perf
+from time_split_app._logging import log_perf, configure_logging
 from time_split_app._support import enforce_max_splits, get_about
 from time_split_app.widgets.data import DataWidget
 from time_split_app.widgets.display import (
@@ -31,11 +30,12 @@ st.set_page_config(
 
 start = perf_counter()
 
-configure_plotting()
-levels = {
-    f"{LOGGER.name}.performance_level": config.PERFORMANCE_LOG_LEVEL,
-}
-basic_config(level=logging.WARNING)
+
+if config.CONFIGURE_LOGGING:
+    configure_logging()
+if config.CONFIGURE_PLOTTING:
+    configure_plotting()
+
 
 if config.PROCESS_QUERY_PARAMS:
     QueryParams.set()  # Fail fast if the query is incorrect.

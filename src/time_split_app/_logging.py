@@ -4,6 +4,7 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 from rics.collections.dicts import flatten_dict
+from rics.logs import basic_config
 from streamlit.runtime.scriptrunner import get_script_run_ctx
 
 from time_split_app import config
@@ -77,3 +78,10 @@ def _get_session_data(session_id: str) -> str:
         return ""
 
     return request.remote_ip  # type: ignore[no-any-return]
+
+
+def configure_logging() -> None:
+    levels = {
+        f"{LOGGER.name}.performance_level": config.PERFORMANCE_LOG_LEVEL,
+    }
+    basic_config(force=False, **levels)

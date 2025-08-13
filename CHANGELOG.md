@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.2] - 2025-07-17
 
+### Added
+* Options `config.CONFIGURE_PLOTTING` and `CONFIGURE_LOGGING` (default=`true` for both).
+
 ### Changed
 * Bump PyPI `Development Status` classifier.
 
 ### Fixed
 * Various documentation issues.
+* Option `config.PERFORMANCE_LOG_LEVEL` is now mapped to the correct env var.
 
 ## [0.7.1] - 2025-07-17
 
