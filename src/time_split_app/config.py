@@ -3,65 +3,65 @@
 Values in this module are treated as hard limits by the server.
 """
 
-from rics.env import read as env
+from rics.env import read as _env
 
 # Configurable by application users
-PLOT_RAW_TIMESERIES: bool = env.read_bool("PLOT_AGGREGATIONS_PER_FOLD", True)
+PLOT_RAW_TIMESERIES: bool = _env.read_bool("PLOT_AGGREGATIONS_PER_FOLD", True)
 """Enable plot in the `🔍 Show raw data` tab."""
-PLOT_AGGREGATIONS_PER_FOLD: bool = env.read_bool("PLOT_AGGREGATIONS_PER_FOLD", True)
+PLOT_AGGREGATIONS_PER_FOLD: bool = _env.read_bool("PLOT_AGGREGATIONS_PER_FOLD", True)
 """Enable plots in the `📈 Aggregations per fold` tab."""
-FIGURE_DPI: int = env.read_int("FIGURE_DPI", 200)
+FIGURE_DPI: int = _env.read_int("FIGURE_DPI", 200)
 """Controls figure fidelity. Higher values look better, but is a lot slower."""
-MAX_SPLITS = env.read_int("MAX_SPLITS", 100)
+MAX_SPLITS = _env.read_int("MAX_SPLITS", 100)
 """Upper fold count limit. Prevents figures from getting too large."""
 
 # Server configuration
-RAW_DATA_SAMPLES: int = env.read_int("RAW_DATA_SAMPLES", 1000)
+RAW_DATA_SAMPLES: int = _env.read_int("RAW_DATA_SAMPLES", 1000)
 """Maximum number of display and plot in `🔍 Show raw data` tab."""
-DATASETS_CONFIG_PATH: str = env.read_str("DATASETS_CONFIG_PATH", "datasets.toml")
-"""Determines where to look for the dataset configuration TOML. Disable the dataset view if not found."""
-REQUIRE_DATASETS: bool = env.read_bool("REQUIRE_DATASETS", False)
-"""If set, the server will refuse to start if not the ``DATASETS_CONFIG_PATH`` file does not exist."""
-DATASET_CONFIG_CACHE_TTL: int = env.read_int("DATASET_CONFIG_CACHE_TTL", 30)
+DATASETS_CONFIG_PATH: str = _env.read_str("DATASETS_CONFIG_PATH", "datasets.toml")
+"""Dataset configuration TOML path. Disable the dataset view if not found."""
+REQUIRE_DATASETS: bool = _env.read_bool("REQUIRE_DATASETS", False)
+"""If set, refuse to start if the ``DATASETS_CONFIG_PATH`` file does not exist."""
+DATASET_CONFIG_CACHE_TTL: int = _env.read_int("DATASET_CONFIG_CACHE_TTL", 30)
 """Frequency with which the ``DATASETS_CONFIGS_PATH`` is read."""
-DATASET_CACHE_TTL: int = env.read_int("DATASET_CACHE_TTL", 12 * 60 * 60)
+DATASET_CACHE_TTL: int = _env.read_int("DATASET_CACHE_TTL", 12 * 60 * 60)
 """Cache timeout in seconds. Default is one hour."""
-DATASET_RADIO_LIMIT: int = env.read_int("DATASET_RADIO_LIMIT", 3)
+DATASET_RADIO_LIMIT: int = _env.read_int("DATASET_RADIO_LIMIT", 3)
 """Maximum number of dataset options to show as radio buttons.
 
 Radio buttons are shown with one-line descriptions and all options visible at once. If this limit is exceeded, the UI
 shows a label-only dropdown menu instead. Set to zero to always use the dropdown menu.
 """
-ENABLE_DATA_GENERATOR: bool = env.read_bool("ENABLE_DATA_GENERATOR", True)
+ENABLE_DATA_GENERATOR: bool = _env.read_bool("ENABLE_DATA_GENERATOR", True)
 """Set to ``False`` to disable the built-in dataset generator."""
 
-PROCESS_QUERY_PARAMS: bool = env.read_bool("PROCESS_QUERY_PARAMS", True)
-"""Abort if parameters are given when ``False``. See :class:`~.widgets.types.QueryParams` for details."""
-PERMALINK_BASE_URL: str = env.read_str("PERMALINK_BASE_URL")
+PROCESS_QUERY_PARAMS: bool = _env.read_bool("PROCESS_QUERY_PARAMS", True)
+"""Abort if URL parameters are given when ``False``."""
+PERMALINK_BASE_URL: str = _env.read_str("PERMALINK_BASE_URL")
 """Public base address for the application. Used to create permalinks."""
-USE_CUSTOM_CSS: bool = env.read_bool("USE_CUSTOM_CSS", True)
+USE_CUSTOM_CSS: bool = _env.read_bool("USE_CUSTOM_CSS", True)
 """Disable to use the default Streamlit styling."""
 
-CONFIGURE_PLOTTING = env.read_bool("CONFIGURE_PLOTTING", True)
+CONFIGURE_PLOTTING = _env.read_bool("CONFIGURE_PLOTTING", True)
 """Set to ``False`` to disable the default plotting style setup."""
 
-CONFIGURE_LOGGING = env.read_bool("CONFIGURE_LOGGING", True)
+CONFIGURE_LOGGING = _env.read_bool("CONFIGURE_LOGGING", True)
 """Set to ``False`` to disable the default logging setup."""
-PERFORMANCE_LOG_LEVEL: int = env.read_int("PERFORMANCE_LOG_LEVEL", 20)
-"""Set to modify log level for the `time_split_app.performance` logger. The default is logging.INFO=20."""
+PERFORMANCE_LOG_LEVEL: int = _env.read_int("PERFORMANCE_LOG_LEVEL", 20)
+"""Level for the `time_split_app.performance` logger. Default is logging.INFO=20."""
 
-DATE_ONLY: bool = env.read_bool("DATE_ONLY", True)
+DATE_ONLY: bool = _env.read_bool("DATE_ONLY", True)
 """If ``True``, lock set the app in `date_only` mode wherever possible."""
 
 # Image extensions.
-DATASET_LOADER: str = env.read_str("DATASET_LOADER")
+DATASET_LOADER: str = _env.read_str("DATASET_LOADER")
 """A custom loader implementation.
 
 Type: time_split.widgets.DataLoaderWidget
 Format: `path.to.module:ClassName`.
 """
 
-SPLIT_SELECT_FN: str = env.read_str("SPLIT_SELECT_FN")
+SPLIT_SELECT_FN: str = _env.read_str("SPLIT_SELECT_FN")
 """Custom splitting parameters selection function.
 
 Type: `() -> DatetimeIndexSplitterKwargs`.
@@ -72,7 +72,7 @@ To access query params produced by create_explorer_link(), use
 >>> QueryParams.get()
 """
 
-PLOT_FN: str = env.read_str("PLOT_FN")
+PLOT_FN: str = _env.read_str("PLOT_FN")
 """A custom plotting function; same interface as ``time_split.plot()``.
 
 Type: `(...) -> Axes`.
@@ -84,8 +84,8 @@ To access query params produces by create_explorer_link(), use
 Of course, you may also choose to handle this yourself using ``st.query_params``.
 """
 
-LINK_FN: str = env.read_str("LINK_FN")
-"""A custom link factory function; same interface as ``time_split.app.create_explorer_link()``.
+LINK_FN: str = _env.read_str("LINK_FN")
+"""A custom link function; same interface as ``create_explorer_link()``.
 
 Type: `(...) -> str`.
 Format: `path.to.module:func_name`.
@@ -93,7 +93,7 @@ Format: `path.to.module:func_name`.
 This is experimental; will probably break the QueryParams class.
 """
 
-DEBUG: bool = env.read_bool("DEBUG", False)
+DEBUG: bool = _env.read_bool("DEBUG", False)
 """Enable to show debug information in the UI."""
 
 

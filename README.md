@@ -35,7 +35,7 @@ pip install time-split[app]
 python -m time_split app start
 ```
 in the terminal. You may use
-[`create_explorer_link()`](https://time-split.readthedocs.io/en/stable/api/time_split.app.html#time_split.app.create_explorer_link)
+[create_explorer_link()](https://time-split.readthedocs.io/en/stable/api/time_split.app.html#time_split.app.create_explorer_link)
 to build application URLs with preselected splitting parameters.
 
 # Documentation
@@ -58,7 +58,13 @@ COPY custom_dataset_loader.py .
 # Entrypoint etc.
 ```
 
-Loaders must implement the `DataLoaderWidget` interface.
+Loaders must implement the 
+[DataLoaderWidget](https://time-split.readthedocs.io/en/stable/api/time_split.app.reexport.html#time_split.app.reexport.DataLoaderWidget)
+interface. You may use
+```bash
+python -m time_split app new
+```
+to create a template project to get you started.
 
 # Custom datasets
 To bundle datasets, mount a configuration file (determined by 
@@ -76,10 +82,14 @@ To bundle datasets, mount a configuration file (determined by
 
 [pandas.to_datetime()]: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_datetime.html
 
-The read function is chosen automatically based on the path.
+> ℹ️ The read function is chosen automatically based on the path.
 
 > ℹ️ Additional dependencies are required for remote filesystems.
 > You may use `EXTRA_PIP_PACKAGES=s3fs` to install dependencies for the S3 paths used below.
+
+See the
+[DatasetConfig](https://time-split.readthedocs.io/en/stable/api/time_split.app.reexport.html#time_split.app.reexport.DatasetConfig)
+class for internal representation.
 
 ```toml
 [my-dataset]
@@ -120,9 +130,7 @@ in the terminal. The [tomli-w](https://pypi.org/project/tomli-w/) package may be
 All datasets are reloaded immediately if the configuration changes, ignoring comments and formatting.
 
 # Environment variables
-See [config.py](src/time_split_app/config.py) for configurable values. Use `true|false` for boolean variables. 
-Documentation for the underlying framework (Streamlit) is available 
-[here](https://docs.streamlit.io/develop/concepts/configuration/options/).
+See [config.py](src/time_split_app/config.py) for configurable values.
 
 ## User choice
 Users may *lower* some configured values by using the Performance tweaker widget in the `❔ About tab` of application. To 

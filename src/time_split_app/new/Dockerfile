@@ -8,7 +8,8 @@ RUN apt-get update && \
 
 RUN pip install time-split[app]
 
-# RUN pip install s3fs  # Your dependencies go here
+# Your dependencies go here. We install s3fs as an example.
+RUN pip install s3fs==2025.5.1
 
 FROM python:$PYTHON_BASE AS app
 
@@ -26,7 +27,6 @@ USER streamlit
 
 COPY --chown=streamlit entrypoint.sh my_extensions.py ./
 
-# See https://github.com/rsundqvist/time-split-app/blob/master/src/time_split_app/config.py for all options.
 ENV DATASET_LOADER=my_extensions:MyDatasetLoader
 ENV SPLIT_SELECT_FN=my_extensions:my_select_fn
 ENV PLOT_FN=my_extensions:my_plot_fn
