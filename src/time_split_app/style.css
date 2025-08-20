@@ -1,3 +1,7 @@
 [class*="tight-rows"] * {
     row-gap: 1px;
 }
+
+[class*="tight-columns"] * {
+    column-gap: 1px;
+}

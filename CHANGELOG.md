@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * Bump PyPI `Development Status` classifier.
+* Datetime and Duration widgets now use horizontal layouts by default.
 
 ### Fixed
 * Various documentation issues.

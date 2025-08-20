@@ -6,6 +6,8 @@ import streamlit as st
 from time_split_app.widgets.types import SpanType, QueryParams
 from time_split.types import Span
 
+SpanArg = Literal["before", "after"]
+
 
 class SpanWidget:
     """Widget for managing `before` and `after` arguments.
@@ -20,7 +22,7 @@ class SpanWidget:
 
     def __init__(
         self,
-        span: Literal["before", "after"],
+        span: SpanArg,
         *,
         step: int = 10,
         duration: bool = True,
@@ -50,6 +52,10 @@ class SpanWidget:
         self._kinds = kinds
         self._step = step
         self._is_before = is_before
+
+    @property
+    def span(self) -> SpanArg:
+        return "before" if self._is_before else "after"
 
     def get_span(self, label: str, default_kind: SpanType) -> Span:
         """Get before/after input from the user."""

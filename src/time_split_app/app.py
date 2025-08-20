@@ -8,7 +8,7 @@ from rics.plotting import configure as configure_plotting
 from time_split import split
 
 from time_split_app import _views, config, style
-from time_split_app._logging import log_perf, configure_logging
+from time_split_app._logging import configure_logging, log_perf
 from time_split_app._support import enforce_max_splits, get_about
 from time_split_app.widgets.data import DataWidget
 from time_split_app.widgets.display import (

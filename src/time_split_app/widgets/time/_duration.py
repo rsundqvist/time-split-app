@@ -22,12 +22,12 @@ class DurationWidget:
         units: Iterable[str] | None = None,
         default_periods: dict[str, int] | None = None,
     ) -> None:
-        units = (*units,)
-
         if units is None:
             units = ("days",) if config.DATE_ONLY else ("days", "hours", "minutes")
-        elif not units:
-            raise ValueError("Need at least one unit.")
+        else:
+            units = tuple(units)
+            if not units:
+                raise ValueError("Need at least one unit.")
 
         if default_unit is None:
             self._unit = units[0]
@@ -49,7 +49,7 @@ class DurationWidget:
         self._units = units
         self._periods = default_periods
 
-    def select(self, label: str, *, horizontal: bool = False) -> datetime.timedelta:
+    def select(self, label: str, *, horizontal: bool = True) -> datetime.timedelta:
         """Prompt user to select a duration.
 
         Args:
@@ -60,7 +60,8 @@ class DurationWidget:
             A timedelta.
         """
         if horizontal:
-            left, right = st.columns(2)
+            with st.container(key=f"tight-columns-DurationWidget.select-{label}"):
+                left, right = st.columns(2)
         else:
             container = st.container()
             left = right = container
@@ -90,6 +91,6 @@ class DurationWidget:
         return timedelta
 
 
-def select_duration(label: str, *, horizontal: bool = False) -> datetime.timedelta:
+def select_duration(label: str, *, horizontal: bool = True) -> datetime.timedelta:
     """See :meth:`DurationWidget.select`."""
     return DurationWidget().select(label, horizontal=horizontal)

@@ -35,6 +35,7 @@ def select_datetime(
     header: bool = True,
     date_only: bool = False,
     disabled: bool = False,
+    horizontal: bool = True,
 ) -> AnyDate:
     """Prompt user to select datetime.
 
@@ -44,6 +45,7 @@ def select_datetime(
         header: If ``True``, show `label` in a Streamlit header.
         date_only: If ``True``, disable the time selector and return plain :class:`datetime.date` instances.
         disabled: If ``True``, disable user input to the Streamlit widget.
+        horizontal: If ``True``, show `date` and `time` side-by-side. Ignored when `date_only` is set.
 
     Returns:
         A datetime or date.
@@ -55,7 +57,13 @@ def select_datetime(
     if header:
         st.header(label)
 
-    date = st.date_input(
+    if date_only or not horizontal:
+        left = right = st.container()
+    else:
+        with st.container(key=f"tight-columns-select_datetime-{label}"):
+            left, right = st.columns(2)
+
+    date = left.date_input(
         f"select-{label}-date",
         value=initial,
         min_value=datetime.date(1990, 1, 1),
@@ -70,7 +78,7 @@ def select_datetime(
 
     assert isinstance(initial, datetime.datetime)
 
-    time = st.time_input(
+    time = right.time_input(
         f"select-{label}-time",
         value=initial.time(),
         label_visibility="collapsed",
