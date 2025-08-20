@@ -64,7 +64,7 @@ DATASET_LOADER: str = _env.read_str("DATASET_LOADER")
 """A custom loader implementation.
 
 Type: time_split.widgets.DataLoaderWidget
-Format: `path.to.module:ClassName`.
+Format: `path.to.module:ClassName` (or an instance thereof).
 """
 
 SPLIT_SELECT_FN: str = _env.read_str("SPLIT_SELECT_FN")

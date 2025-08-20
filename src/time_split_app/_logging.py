@@ -81,7 +81,5 @@ def _get_session_data(session_id: str) -> str:
 
 
 def configure_logging() -> None:
-    levels = {
-        f"{LOGGER.name}.performance_level": config.PERFORMANCE_LOG_LEVEL,
-    }
-    basic_config(force=False, **levels)
+    basic_config(force=False)
+    LOGGER.setLevel(config.PERFORMANCE_LOG_LEVEL)

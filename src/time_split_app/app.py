@@ -133,8 +133,8 @@ msg = log_perf(
 )
 
 with sidebar_top:
-    func = st.error
-    for limit, candidate in (0.30, st.success), (0.60, st.info), (1.20, st.warning):
+    func = st.warning
+    for limit, candidate in (0.50, st.success), (1.0, st.info):
         if limit >= TOTAL_RUNTIME:
             func = candidate
             break
