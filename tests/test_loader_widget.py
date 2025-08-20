@@ -3,6 +3,7 @@ from datetime import datetime
 
 import pytest
 
+from time_split_app import config
 from time_split_app.widgets import DataLoaderWidget
 
 logging.getLogger("streamlit.runtime.scriptrunner_utils.script_run_context").disabled = True
@@ -16,9 +17,13 @@ logging.getLogger("streamlit.runtime.scriptrunner_utils.script_run_context").dis
         ("relative", "absolute"),
     ],
 )
-def test_select_range(start_option, end_option):
+def test_select_range(start_option, end_option, monkeypatch):
     start = datetime.fromisoformat("2019-04-11 00:35:00")
     end = datetime.fromisoformat("2019-05-11 21:30:00")
+
+    monkeypatch.setattr(config, "DATA_GENERATOR_INITIAL_RANGE_FN", lambda: (start, end))
+    monkeypatch.setattr(config, "DATE_ONLY", False)
+
     actual = DataLoaderWidget.select_range(
         initial=(start, end),
         start_options=[start_option],

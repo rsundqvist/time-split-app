@@ -1,12 +1,12 @@
 import abc
 from collections.abc import Collection
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Literal, overload
 
 import pandas as pd
 import streamlit as st
 from rics.types import LiteralHelper
-
+from rics.misc import get_by_full_name
 from time_split_app import config
 
 AnyDateRange = tuple[datetime, datetime] | tuple[date, date]
@@ -17,8 +17,6 @@ ANCHOR_HELPER: LiteralHelper[Anchor] = LiteralHelper(Anchor, default_name="ancho
 ABSOLUTE = "absolute"
 NOW = "now"
 RELATIVE = "relative"
-
-DATE_ONLY = config.DATE_ONLY
 
 
 class DataLoaderWidget(abc.ABC):
@@ -84,7 +82,7 @@ class DataLoaderWidget(abc.ABC):
         cls,
         initial: AnyDateRange | None = None,
         *,
-        date_only: bool = DATE_ONLY,
+        date_only: bool | None = None,
         start_options: AnchorOptions | None = None,
         end_options: AnchorOptions | None = None,
     ) -> AnyDateRange:
@@ -92,7 +90,7 @@ class DataLoaderWidget(abc.ABC):
 
         Args:
             initial: Initial range used by the widget.
-            date_only: If ``True``, disable the time selector and return dates.
+            date_only: If ``True``, disable the time selector and return dates. Default = based on config.
             start_options: Start options to make available to the user. Default = all.
             end_options: End options to make available to the user. Default = all.
 
@@ -106,13 +104,16 @@ class DataLoaderWidget(abc.ABC):
 
         from ..time import select_datetime, DurationWidget
 
+        if date_only is None:
+            date_only = config.DATE_ONLY
+
         start_options = ANCHOR_HELPER.options if start_options is None else cls._check(start_options, name="start")
         end_options = ANCHOR_HELPER.options if end_options is None else cls._check(end_options, name="end")
 
         select_datetime = partial(select_datetime, header=False, date_only=date_only)
 
         if initial is None:
-            initial = datetime.fromisoformat("2019-04-11 00:35:00"), datetime.fromisoformat("2019-05-11 21:30:00")
+            initial = initial_range_fn()
 
         initial_start, initial_end = initial
 
@@ -132,10 +133,19 @@ class DataLoaderWidget(abc.ABC):
             left.subheader("Select Start", divider=True)
             right.subheader("Select End", divider=True)
 
+            left_index, right_index = 0, 0
+            if initial_range_fn is default_initial_range_fn:
+                try:
+                    left_index = [*start_options].index("relative")
+                    right_index = [*end_options].index("now")
+                except Exception:
+                    pass
+
             with left:
                 start_type = st.radio(
                     "start-selection-type",
                     start_options,
+                    index=left_index,
                     horizontal=True,
                     format_func=str.title,
                     label_visibility="collapsed",
@@ -145,6 +155,7 @@ class DataLoaderWidget(abc.ABC):
                 end_type = st.radio(
                     "end-selection-type",
                     end_options,
+                    index=right_index,
                     horizontal=True,
                     format_func=str.title,
                     label_visibility="collapsed",
@@ -204,3 +215,25 @@ class DataLoaderWidget(abc.ABC):
             raise ValueError(f"Bad {name}; options must be unique.")
 
         return options
+
+
+DEFAULT_INITIAL_RANGE_SECONDS = 30 * 24 * 60 * 60  # 30 days
+
+
+def default_initial_range_fn() -> tuple[datetime, datetime] | tuple[date, date]:
+    now = datetime.now()
+    return now - timedelta(seconds=DEFAULT_INITIAL_RANGE_SECONDS), now
+
+
+if func_name := config.DATA_GENERATOR_INITIAL_RANGE_FN:
+    try:
+        # Undocumented behavior!
+        value = int(func_name)
+        if value > 0:
+            DEFAULT_INITIAL_RANGE_SECONDS = value
+        initial_range_fn = default_initial_range_fn
+
+    except ValueError:
+        initial_range_fn = get_by_full_name(func_name)
+else:
+    initial_range_fn = default_initial_range_fn

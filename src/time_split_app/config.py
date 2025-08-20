@@ -34,6 +34,12 @@ shows a label-only dropdown menu instead. Set to zero to always use the dropdown
 """
 ENABLE_DATA_GENERATOR: bool = _env.read_bool("ENABLE_DATA_GENERATOR", True)
 """Set to ``False`` to disable the built-in dataset generator."""
+DATA_GENERATOR_INITIAL_RANGE_FN: str = _env.read_str("DATA_GENERATOR_INITIAL_RANGE_FN")
+"""Initial range callback for generated data.
+
+Type: `() -> (start, end)`.
+Format: `path.to.module:func_name`.
+"""
 
 PROCESS_QUERY_PARAMS: bool = _env.read_bool("PROCESS_QUERY_PARAMS", True)
 """Abort if URL parameters are given when ``False``."""
