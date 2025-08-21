@@ -1,6 +1,6 @@
 [project]
 name = "time-split-app"
-version = "0.7.2"
+version = "1.0.0"
 description = "Companion app for the `time-split` library."
 authors = [
     { name = "Richard Sundqvist", email = "richard.sundqvist@live.se" },
@@ -8,7 +8,7 @@ authors = [
 license = { text = "MIT" }
 readme = "README.md"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Operating System :: POSIX :: Linux",
