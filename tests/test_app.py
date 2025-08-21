@@ -11,6 +11,8 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 
+import time_split_app as base_package
+
 
 def dummy_range():
     import streamlit as st
@@ -25,7 +27,7 @@ DUMMY_RANGE = f"{__name__}.{dummy_range.__name__}"
 @pytest.mark.filterwarnings("ignore")
 def test_app(monkeypatch):
     for name in list(sys.modules):
-        if name.startswith("time_split_app"):
+        if name.startswith(base_package.__name__):
             del sys.modules[name]
 
     monkeypatch.setenv("DATE_ONLY", "False")

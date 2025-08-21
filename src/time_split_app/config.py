@@ -21,11 +21,11 @@ RAW_DATA_SAMPLES: int = _env.read_int("RAW_DATA_SAMPLES", 1000)
 DATASETS_CONFIG_PATH: str = _env.read_str("DATASETS_CONFIG_PATH", "datasets.toml")
 """Dataset configuration TOML path. Disable the dataset view if not found."""
 REQUIRE_DATASETS: bool = _env.read_bool("REQUIRE_DATASETS", False)
-"""If set, refuse to start if the ``DATASETS_CONFIG_PATH`` file does not exist."""
+"""If set, refuse to start if the ``DATASETS_CONFIG_PATH`` file cannot be read or is invalid."""
 DATASET_CONFIG_CACHE_TTL: int = _env.read_int("DATASET_CONFIG_CACHE_TTL", 30)
 """Frequency with which the ``DATASETS_CONFIGS_PATH`` is read."""
 DATASET_CACHE_TTL: int = _env.read_int("DATASET_CACHE_TTL", 12 * 60 * 60)
-"""Cache timeout in seconds. Default is one hour."""
+"""Cache timeout in seconds. Default is twelve hours."""
 DATASET_RADIO_LIMIT: int = _env.read_int("DATASET_RADIO_LIMIT", 3)
 """Maximum number of dataset options to show as radio buttons.
 
@@ -54,7 +54,7 @@ CONFIGURE_PLOTTING = _env.read_bool("CONFIGURE_PLOTTING", True)
 CONFIGURE_LOGGING = _env.read_bool("CONFIGURE_LOGGING", True)
 """Set to ``False`` to disable the default logging setup."""
 PERFORMANCE_LOG_LEVEL: int = _env.read_int("PERFORMANCE_LOG_LEVEL", 20)
-"""Level for the `time_split_app.performance` logger. Default is logging.INFO=20."""
+"""Level for the `time_split_app.performance` logger. Default is ``logging.INFO=20``."""
 
 DATE_ONLY: bool = _env.read_bool("DATE_ONLY", True)
 """If ``True``, lock set the app in `date_only` mode wherever possible."""

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * Bump PyPI `Development Status` classifier.
 * Datetime and Duration widgets now use horizontal layouts by default.
+* The `config.DATASETS_CONFIG_PATH` option now supports remote paths.
 
 ### Fixed
 * Option `config.PERFORMANCE_LOG_LEVEL` is now mapped to the correct env var.

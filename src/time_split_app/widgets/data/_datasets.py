@@ -1,5 +1,6 @@
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, UTC
 from time import perf_counter
 from typing import Any, Iterable
 
@@ -32,9 +33,10 @@ class DatasetWidget:
             "label": "Select dataset.",
             "options": options,
             "index": index,
-            "help": f"Dataset options ({len(options)}):"
-            + "".join(f"\n * {label}: {summary}" for label, summary in zip(options, option_summaries))
-            + f"\n\nDatasets are reloaded every `{config.DATASET_CACHE_TTL}` seconds.",
+            "help": f"# Dataset options ({len(options)}):\n\n"
+            + "".join(f"\n* {label}: {summary}" for label, summary in zip(options, option_summaries))
+            + f"\n\nDatasets are refreshed every `{config.DATASET_CACHE_TTL // 60:_d}` minutes. Datasets are forcibly"
+            f" reloaded if the config file (`'{config.DATASETS_CONFIG_PATH}'`) is changed.",
         }
 
         if len(options) <= config.DATASET_RADIO_LIMIT:
@@ -61,13 +63,24 @@ class DatasetWidget:
     @staticmethod
     def load_datasets() -> list[Dataset]:
         """Load configured datasets."""
-        configs = load_dataset_configs()
+        configs, configs_loaded = load_dataset_configs()
 
         if configs:
             sha256 = hashlib.new("sha256", str(configs).encode(), usedforsecurity=False).hexdigest()
-            return load_datasets(sha256, configs)
+            datasets, datasets_loaded = load_datasets(sha256, configs)
         else:
-            return []
+            datasets_loaded = None
+            datasets = []
+
+        if config.DEBUG:
+            rows = [
+                f"{config.DATASETS_CONFIG_PATH=}",
+                f"{configs_loaded=}",
+                f"{datasets_loaded=}",
+            ]
+            st.code("\n".join(rows))
+
+        return datasets
 
     @property
     def has_data(self) -> bool:
@@ -75,35 +88,39 @@ class DatasetWidget:
 
     @property
     def size(self) -> int:
-        configs = load_dataset_configs()
+        configs, _ = load_dataset_configs()
         return len(configs) if configs else 0
 
 
 @st.cache_resource(ttl=config.DATASET_CONFIG_CACHE_TTL, max_entries=1)
-def load_dataset_configs() -> tuple[DatasetConfig, ...] | None:
+def load_dataset_configs() -> tuple[tuple[DatasetConfig, ...] | None, datetime]:
     """Load configuration file."""
+    now = datetime.now(UTC)
+
     path = config.DATASETS_CONFIG_PATH
     try:
         configs = load_dataset_configs_from_path(path)
-    except OSError:
+    except Exception as e:
         from time_split_app._logging import LOGGER
 
         if config.REQUIRE_DATASETS:
             from os import _exit as force_exit
 
-            LOGGER.critical(f"Failed to load {path=}. Refusing to start since REQUIRE_DATASETS=True.")
+            LOGGER.exception(f"Failed to load dataset config {path=}. Refusing to start since REQUIRE_DATASETS=True.")
             force_exit(52)  # regular exit will not halt the underlying server.
 
-        LOGGER.warning(f"Failed to read dataset {path=}. No datasets will be loaded.")
-        return None
+        LOGGER.warning(f"Failed to read dataset config {path=}: {e!r}. No datasets will be loaded.", exc_info=False)
+        return None, now
 
-    return (*configs,)
+    return (*configs,), now
 
 
 @st.cache_resource(ttl=config.DATASET_CACHE_TTL, max_entries=1)
-def load_datasets(sha256: str, _cfgs: tuple[DatasetConfig, ...]) -> list[Dataset]:
+def load_datasets(sha256: str, _cfgs: tuple[DatasetConfig, ...]) -> tuple[list[Dataset], datetime]:
     """Load datasets from configuration."""
     start = perf_counter()
+
+    now = datetime.now(UTC)
 
     script_run_ctx = get_script_run_ctx()
 
@@ -123,7 +140,7 @@ def load_datasets(sha256: str, _cfgs: tuple[DatasetConfig, ...]) -> list[Dataset
         seconds=seconds,
         extra={"sha256": f"0x{sha256}"},
     )
-    return datasets
+    return datasets, now
 
 
 def _add_script_run_ctx(ctx: ScriptRunContext | None) -> None:

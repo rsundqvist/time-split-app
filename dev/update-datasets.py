@@ -2,10 +2,12 @@ import datetime
 import os
 import sys
 from dataclasses import asdict
+from os.path import join
 from pathlib import Path
 from time import perf_counter
 
 import click
+import fsspec
 import pandas as pd
 import tomli_w
 from rics.logs import disable_temporarily
@@ -110,12 +112,13 @@ def upload(df: pd.DataFrame, data_root: str, name: str, compression: str | None)
         )
         configs.append(cfg)
 
-    out = ROOT.joinpath(f"data/{name}-datasets.toml")
-    toml = tomli_w.dumps({c.label: {k: v for k, v in asdict(c).items() if v} for c in configs}, multiline_strings=True)
-    out.write_text(toml)
+    dict_configs = {c.label: {k: v for k, v in asdict(c).items() if v} for c in configs}
+    dataset_file = join(data_root, f"{name}-datasets.toml")  # noqa: PTH118
+    with fsspec.open(dataset_file, "wb") as f:
+        tomli_w.dump(dict_configs, f, multiline_strings=True)
 
     click.secho(
-        f"Uploaded {len(configs)} {name} datasets in {perf_counter() - start:.2f} seconds. Datasets file: '{out.relative_to(Path.cwd())}'",
+        f"Uploaded {len(configs)} {name} datasets in {perf_counter() - start:.2f} seconds. Dataset file: '{dataset_file}'",
         fg="green",
     )
 

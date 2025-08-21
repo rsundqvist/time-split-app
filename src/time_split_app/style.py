@@ -1,8 +1,10 @@
 """Weg page style customization."""
 
 import logging
+import os
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 from . import config
@@ -28,11 +30,17 @@ def apply_custom_css() -> None:
     if debug:
         path = Path(__file__).parent / "style.css"
 
-        rows = [
-            f"<!-- {path} -->",
-            f"<!-- {config.DEBUG=} -->",
-            f"<!-- {config.USE_CUSTOM_CSS=} -->",
-            "",
-            f"<style>\n{CSS}</style>",
-        ]
-        st.code("\n".join(rows), language="css")
+        left, right = st.columns(2)
+
+        with left:
+            rows = [
+                f"<!-- {path} -->",
+                f"<!-- {config.USE_CUSTOM_CSS=} -->",
+                "",
+                f"<style>\n{CSS}</style>",
+            ]
+            st.code("\n".join(rows), language="css")
+
+        with right:
+            st.dataframe(pd.Series(st.query_params, name="Query param value").sort_index().to_frame())
+            st.dataframe(pd.Series(os.environ, name="Env var value").sort_index().to_frame())

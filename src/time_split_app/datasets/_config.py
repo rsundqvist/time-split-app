@@ -3,8 +3,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from rics.paths import AnyPath, any_path_to_path
-
 USE_ORIGINAL_INDEX = "__INDEX__"
 """Special value indicating that the dataset already has a datetime-like index."""
 
@@ -16,7 +14,7 @@ class DatasetConfig:
     label: str
     """Name shown in the UI (Markdown).
 
-    When using :func:`load_dataset_configs`, this will default to do the section header.
+    When using :func:`load_dataset_configs`, this will default to the section header.
     """
 
     path: str
@@ -41,7 +39,7 @@ class DatasetConfig:
     """
 
 
-def load_dataset_configs(file: AnyPath) -> list[DatasetConfig]:
+def load_dataset_configs(file: str | Path) -> list[DatasetConfig]:
     """Read dataset configs from file.
 
     Returns one :class:`.DatasetConfig` object per top-level section in `file`.
@@ -52,18 +50,10 @@ def load_dataset_configs(file: AnyPath) -> list[DatasetConfig]:
     Returns:
         A list of dataset configs
     """
-
-    def check_config(path: Path) -> None:
-        if not path.is_file():
-            raise FileNotFoundError
-
-    with any_path_to_path(file, postprocessor=check_config).open("rb") as f:
-        raw = tomllib.load(f)
-
     labels: dict[str, DatasetConfig] = {}
     rv: list[DatasetConfig] = []
     config: dict[str, Any]
-    for section, config in raw.items():
+    for section, config in _read_toml(file).items():
         config.setdefault("label", section)
 
         try:
@@ -77,6 +67,23 @@ def load_dataset_configs(file: AnyPath) -> list[DatasetConfig]:
         rv.append(cfg)
 
     return rv
+
+
+def _read_toml(file: str | Path) -> dict[str, Any]:
+    file = str(file)
+
+    try:
+        import fsspec  # type: ignore[import-untyped]
+
+        with fsspec.open(file, "rb") as f:
+            return tomllib.load(f)
+    except ImportError as e:
+        if "://" in file:
+            msg = f"Cannot load dataset config {file=} without package '{e.name}'."
+            raise ImportError(msg) from e
+
+    with Path(file).open("rb") as f:
+        return tomllib.load(f)
 
 
 def _create(raw: dict[str, Any], *, seen: dict[str, DatasetConfig]) -> DatasetConfig:

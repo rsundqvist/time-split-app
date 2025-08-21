@@ -67,9 +67,8 @@ python -m time_split app new
 to create a template project to get you started.
 
 # Custom datasets
-To bundle datasets, mount a configuration file (determined by 
-[`DATASETS_CONFIG_PATH='/home/streamlit/datasets.toml'`](https://time-split.readthedocs.io/en/stable/generated/time_split.streamlit.config.html#time_split.streamlit.config.DATASETS_CONFIG_PATH)
-). The `DatasetConfig` struct has the following keys:
+To bundle datasets, specify a configuration file (e.g. `DATASETS_CONFIG_PATH='s3://my-bucket/data/datasets.toml'`)
+with the following keys:
 
 | Key                    | Type             | Required | Description                                                                   |
 |------------------------|------------------|----------|-------------------------------------------------------------------------------|
@@ -111,19 +110,11 @@ Last updated: `2019-05-11T20:30:00+00:00'
 
 Multiple datasets may be configured in their own top-level sections. Labels must be unique.
 
-## Mounted datasets
-A convenient way to keep datasets up-to-date without relying on network storage is to mount a dataset folder on a local
-machine, using e.g. a CRON job to update the data. To start the image with datasets mounted, run:
-```bash
-docker run \
-  -p 8501:8501 \
-  -v ./data:/home/streamlit/data:ro \
-  -v ./datasets.toml:/home/streamlit/datasets.toml:ro \
-  -e REQUIRE_DATASETS=true \
-  rsundqvist/time-split
-```
-in the terminal. The [tomli-w](https://pypi.org/project/tomli-w/) package may be used to emit TOML files if using Python.
+## Updating datasets
+Datasets may be updated while the app is running. This is best done by changing the datasets config TOML file (e.g. by)
+writing a timestamp, as above.
 
+Default timings:
 * The dataframes returned by the dataset loader are cached for `config.DATASET_CACHE_TTL` seconds (default = 12 hours).
 * The dataset configuration file is read every `config.DATASET_CONFIG_CACHE_TTL` seconds (default = 30 seconds).
 
