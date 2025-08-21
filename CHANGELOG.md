@@ -7,9 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.2] - 2025-08-21
-
-## [1.0.1] - 2025-08-21
+## [1.0.3] - 2025-08-21
+* Fix PyPI trusted publishing (`1.0.2` and `1.0.2` as well).
 
 ## [1.0.0] - 2025-08-21
 
@@ -78,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/rsundqvist/time-split-app/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/rsundqvist/time-split-app/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/rsundqvist/time-split-app/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/rsundqvist/time-split-app/compare/v0.7.2...v1.0.0
