@@ -44,14 +44,15 @@ jobs:
     needs: release
     name: Create Github Release
     runs-on: ubuntu-latest
+    permissions: write-all
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Get version from tag
         id: tag_name
         shell: bash
-        run: |
-          echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
+        run: echo "current_version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
       - name: Get Changelog Entry
         id: changelog_reader
