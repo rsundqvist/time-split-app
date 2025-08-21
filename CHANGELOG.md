@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-08-21
+
 ## [1.0.0] - 2025-08-21
 
 ### Added
@@ -74,7 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/rsundqvist/time-split-app/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/rsundqvist/time-split-app/compare/v0.7.2...v1.0.0
 [0.7.2]: https://github.com/rsundqvist/time-split-app/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/rsundqvist/time-split-app/compare/v0.7.0...v0.7.1
