@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [1.0.3] - 2025-08-21
-* Fix PyPI trusted publishing (`1.0.2` and `1.0.2` as well).
+* Fix PyPI trusted publishing.
 
 ## [1.0.0] - 2025-08-21
 
