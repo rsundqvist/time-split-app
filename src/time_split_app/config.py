@@ -19,11 +19,14 @@ MAX_SPLITS = _env.read_int("MAX_SPLITS", 100)
 RAW_DATA_SAMPLES: int = _env.read_int("RAW_DATA_SAMPLES", 1000)
 """Maximum number of display and plot in `🔍 Show raw data` tab."""
 DATASETS_CONFIG_PATH: str = _env.read_str("DATASETS_CONFIG_PATH", "datasets.toml")
-"""Dataset configuration TOML path. Disable the dataset view if not found."""
+"""Dataset configuration TOML path. Disable the dataset view if not found.
+
+May be remote, e.g. ``s3://my-bucket/data/datasets.toml`` for AWS blob storage.
+"""
 REQUIRE_DATASETS: bool = _env.read_bool("REQUIRE_DATASETS", False)
-"""If set, refuse to start if the ``DATASETS_CONFIG_PATH`` file cannot be read or is invalid."""
+"""If set, refuse to start if the :attr:`DATASETS_CONFIG_PATH` file cannot be read or is invalid."""
 DATASET_CONFIG_CACHE_TTL: int = _env.read_int("DATASET_CONFIG_CACHE_TTL", 30)
-"""Frequency with which the ``DATASETS_CONFIGS_PATH`` is read."""
+"""Frequency with which the :attr:`DATASETS_CONFIG_PATH` is read."""
 DATASET_CACHE_TTL: int = _env.read_int("DATASET_CACHE_TTL", 12 * 60 * 60)
 """Cache timeout in seconds. Default is twelve hours."""
 DATASET_RADIO_LIMIT: int = _env.read_int("DATASET_RADIO_LIMIT", 3)
@@ -37,8 +40,8 @@ ENABLE_DATA_GENERATOR: bool = _env.read_bool("ENABLE_DATA_GENERATOR", True)
 DATA_GENERATOR_INITIAL_RANGE_FN: str = _env.read_str("DATA_GENERATOR_INITIAL_RANGE_FN")
 """Initial range callback for generated data.
 
-Type: `() -> (start, end)`.
-Format: `path.to.module:func_name`.
+* Type: ``() -> (start, end)``.
+* Format: ``path.to.module:func_name``.
 """
 
 PROCESS_QUERY_PARAMS: bool = _env.read_bool("PROCESS_QUERY_PARAMS", True)
@@ -50,7 +53,6 @@ USE_CUSTOM_CSS: bool = _env.read_bool("USE_CUSTOM_CSS", True)
 
 CONFIGURE_PLOTTING = _env.read_bool("CONFIGURE_PLOTTING", True)
 """Set to ``False`` to disable the default plotting style setup."""
-
 CONFIGURE_LOGGING = _env.read_bool("CONFIGURE_LOGGING", True)
 """Set to ``False`` to disable the default logging setup."""
 PERFORMANCE_LOG_LEVEL: int = _env.read_int("PERFORMANCE_LOG_LEVEL", 20)
@@ -63,40 +65,38 @@ DATE_ONLY: bool = _env.read_bool("DATE_ONLY", True)
 DATASET_LOADER: str = _env.read_str("DATASET_LOADER")
 """A custom loader implementation.
 
-Type: time_split.widgets.DataLoaderWidget
-Format: `path.to.module:ClassName` (or an instance thereof).
+* Type: :class:`.DataLoaderWidget`
+* Format: ``path.to.module:ClassName`` (or an instance thereof).
 """
 
 SPLIT_SELECT_FN: str = _env.read_str("SPLIT_SELECT_FN")
 """Custom splitting parameters selection function.
 
-Type: `() -> DatetimeIndexSplitterKwargs`.
-Format: `path.to.module:func_name`.
+* Type: ``() -> DatetimeIndexSplitterKwargs``.
+* Format: ``path.to.module:func_name``.
 
-To access query params produced by create_explorer_link(), use
+To read params produced by :func:`.create_explorer_link()`, use
+
 >>> from time_split_app.widgets.types import QueryParams
 >>> QueryParams.get()
-"""
 
-PLOT_FN: str = _env.read_str("PLOT_FN")
-"""A custom plotting function; same interface as ``time_split.plot()``.
-
-Type: `(...) -> Axes`.
-Format: `path.to.module:func_name`.
-
-To access query params produces by create_explorer_link(), use
->>> from time_split_app.widgets.types import QueryParams
->>> query_params = QueryParams.get()
 Of course, you may also choose to handle this yourself using ``st.query_params``.
 """
 
+PLOT_FN: str = _env.read_str("PLOT_FN")
+"""A custom plotting function; same interface as :func:`time_split.plot()`.
+
+* Type: ``(...) -> Axes``.
+* Format: ``path.to.module:func_name``.
+"""
+
 LINK_FN: str = _env.read_str("LINK_FN")
-"""A custom link function; same interface as ``create_explorer_link()``.
+"""A custom link function; same interface as :func:`.create_explorer_link()`.
 
-Type: `(...) -> str`.
-Format: `path.to.module:func_name`.
+* Type: ``(...) -> str``.
+* Format: ``path.to.module:func_name``.
 
-This is experimental; will probably break the QueryParams class.
+May break the :class:`.QueryParams` class.
 """
 
 DEBUG: bool = _env.read_bool("DEBUG", False)
