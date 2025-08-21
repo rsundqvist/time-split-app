@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 
@@ -43,4 +43,5 @@ def test_select_date_range_date_only():
         date_only=True,
     )
 
-    assert actual == (start.date(), end.date())
+    expected = date.fromisoformat("2019-04-11"), date.fromisoformat("2019-05-12")
+    assert actual == expected

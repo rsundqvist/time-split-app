@@ -114,19 +114,9 @@ class DataLoaderWidget(abc.ABC):
 
         if initial is None:
             initial = initial_range_fn()
-
         initial_start, initial_end = initial
-
-        seconds = int((initial_end - initial_start).total_seconds())
-        duration_widget = DurationWidget(
-            default_periods={
-                "days": seconds // (24 * 60 * 60),
-                "hours": round(seconds / (60 * 60)),
-                "minutes": round(seconds / 60),
-            },
-            default_unit="days" if date_only else "minutes",
-            units=("days",) if date_only else ("days", "hours", "minutes"),
-        )
+        delta: timedelta = initial_end - initial_start
+        duration_widget = DurationWidget.from_delta(delta, date_only)
 
         with st.container(key=f"tight-rows-{cls.select_range.__qualname__}"):
             left, right = st.columns(2)

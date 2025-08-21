@@ -1,5 +1,5 @@
 import datetime
-from collections.abc import Iterable
+from typing import Self
 
 import pandas as pd
 import streamlit as st
@@ -11,43 +11,40 @@ class DurationWidget:
     """Duration specified by unit and count.
 
     Args:
-        default_unit: Default unit. Must be in `units`. Default is ``units[0]``.
-        units: An iterable of permitted units. Default is determined by ``config.DATE_ONLY``.
-        default_periods: Default period counts per unit.
+        default_unit: Default unit; must be a key in `periods`.
+        periods: A dict ``{unit: default_periods}``.
     """
 
     def __init__(
         self,
-        default_unit: str | None = None,
-        units: Iterable[str] | None = None,
-        default_periods: dict[str, int] | None = None,
+        default_unit: str,
+        *,
+        periods: dict[str, int],
     ) -> None:
-        if units is None:
-            units = ("days",) if config.DATE_ONLY else ("days", "hours", "minutes")
+        self._unit = default_unit
+        self._periods = periods
+
+    @classmethod
+    def from_delta(cls, delta: datetime.timedelta | int, date_only: bool | None = None) -> Self:
+        if isinstance(delta, int):
+            delta = datetime.timedelta(days=delta)
+        if date_only is None:
+            date_only = config.DATE_ONLY
+
+        units = ["days"]
+        if date_only:
+            default_unit = "days"
         else:
-            units = tuple(units)
-            if not units:
-                raise ValueError("Need at least one unit.")
+            default_unit = "minutes"
+            units.extend(("seconds", "minutes", "hours"))
 
-        if default_unit is None:
-            self._unit = units[0]
-        else:
-            if default_unit not in units:
-                raise ValueError(f"{default_unit=} must be in {units=}")
-            self._unit = default_unit
-
-        default_periods = {} if default_periods is None else default_periods.copy()
-        for unit, periods in default_periods.items():
-            if periods <= 0:
-                raise ValueError(f"Bad default {periods=} for {unit=}.")
-
-        defaults = {"days": 7, "hours": 7 * 60, "minutes": 7 * 60 * 60}
+        periods = {}
         for unit in units:
-            default = defaults.get(unit, 1)
-            default_periods.setdefault(unit, default)
+            kwargs = {unit: 1}
+            n = delta / datetime.timedelta(**kwargs)
+            periods[unit] = round(n)
 
-        self._units = units
-        self._periods = default_periods
+        return cls(default_unit, periods=periods)
 
     def select(self, label: str, *, horizontal: bool = True) -> datetime.timedelta:
         """Prompt user to select a duration.
@@ -67,12 +64,13 @@ class DurationWidget:
             left = right = container
 
         with right:
+            options = [*self._periods]
             unit = st.selectbox(
                 f"select-{label}-unit",
-                options=self._units,
-                index=self._units.index(self._unit),
+                options=options,
+                index=options.index(self._unit),
                 label_visibility="collapsed",
-                disabled=len(self._units) == 1,
+                disabled=len(options) == 1,
             )
             assert isinstance(unit, str)
 
@@ -91,6 +89,12 @@ class DurationWidget:
         return timedelta
 
 
-def select_duration(label: str, *, horizontal: bool = True) -> datetime.timedelta:
+def select_duration(
+    label: str,
+    *,
+    horizontal: bool = True,
+    delta: datetime.timedelta | int = 7,
+    date_only: bool | None = None,
+) -> datetime.timedelta:
     """See :meth:`DurationWidget.select`."""
-    return DurationWidget().select(label, horizontal=horizontal)
+    return DurationWidget.from_delta(delta, date_only).select(label, horizontal=horizontal)
