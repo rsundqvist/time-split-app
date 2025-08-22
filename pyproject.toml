@@ -29,7 +29,7 @@ dependencies = [
     "pandas                  >= 2.0.3",
     "rics                    >= 6.0.2",
     # Core lib dependencies
-    "time-split[plotting]    >= 0.7.0",
+    "time-split[plotting]    >= 1.0.0",
     "croniter                >= 6.0.0",
     # pip doesn't seem to consider extra dependencies on circular top-level dependencies
     #   time-split[app] -> time-split-app -> time-split[plotting]
