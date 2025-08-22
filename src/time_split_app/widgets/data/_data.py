@@ -18,19 +18,22 @@ from ._loader_from_env_entrypoint import from_env_entrypoint
 from .load import error_on_unaggregated_data, make_formatter
 
 
+def _get_upload_limit() -> int:
+    return int(stc.get_option("server.maxUploadSize"))
+
+
 @dataclass(frozen=True)
 class DataWidget:
     sample_data: SampleDataWidget | None = (
         field(default_factory=SampleDataWidget) if config.ENABLE_DATA_GENERATOR else None
     )
     """Set to ``None`` to disable selection of the default timeseries sample data."""
-
-    upload: bool = field(default_factory=lambda: _get_upload_limit() > 0)
-    """Enable to allow user data uploads."""
+    upload: bool = _get_upload_limit() > 0
+    """Enable user data uploads."""
     datasets: DatasetWidget = field(default_factory=DatasetWidget)
     """Widget used to load included datasets."""
-    custom_dataset_loader: DataLoaderWidget | None = field(default_factory=from_env_entrypoint)
-    """User-defined loader implementation."""
+    custom_dataset_loader: list[DataLoaderWidget] = field(default_factory=from_env_entrypoint)
+    """List of user-defined loader implementations."""
 
     n_samples: int = -1
     """Number of sample rows to show.
@@ -62,8 +65,8 @@ class DataWidget:
 
         titles = {}
         captions = []
-        for src, (title, caption) in sources.items():
-            titles[src] = title
+        for (src, index), (title, caption) in sources.items():
+            titles[(src, index)] = title
             captions.append(caption)
         options = [*sources]
 
@@ -73,13 +76,13 @@ class DataWidget:
         if (query_data := QueryParams.get().data) is None:
             index = 0
         elif isinstance(query_data, tuple):
-            index = options.index(DataSource.GENERATE)
+            index = options.index((DataSource.GENERATE, None))
         elif isinstance(query_data, bytes):
-            index = options.index(DataSource.CUSTOM_DATASET_LOADER)
+            index = options.index((DataSource.CUSTOM_DATASET_LOADER, 0))
         else:
-            index = options.index(DataSource.BUNDLED)
+            index = options.index((DataSource.BUNDLED, None))
 
-        source = st.radio(
+        source, variant = st.radio(
             "data-source",
             options,
             index=index,
@@ -90,7 +93,7 @@ class DataWidget:
         )
         assert source is not None
 
-        return self._load_data(source)
+        return self._load_data(source, variant)
 
     @classmethod
     def upload_dataset(cls) -> pd.DataFrame:
@@ -125,7 +128,9 @@ class DataWidget:
         return df
 
     def _load_data(
-        self, source: DataSource
+        self,
+        source: DataSource,
+        variant: int | None,
     ) -> tuple[pd.DataFrame, float, DataSource, dict[str, str], str | bytes | None]:
         aggregations: dict[str, str] = {}
         dataset: str | bytes | None = None
@@ -143,7 +148,8 @@ class DataWidget:
             case DataSource.BUNDLED:
                 df, aggregations, dataset = self.datasets.select()
             case DataSource.CUSTOM_DATASET_LOADER:
-                df, aggregations, dataset = self._handle_custom_loader()
+                assert variant is not None
+                df, aggregations, dataset = self._handle_custom_loader(variant)
             case _:
                 raise TypeError(f"{source=}")
 
@@ -162,14 +168,16 @@ class DataWidget:
 
         return df, seconds, source, aggregations, dataset
 
-    def _handle_custom_loader(self) -> tuple[pd.DataFrame, dict[str, str], bytes | None]:
-        loader = self.custom_dataset_loader
+    def _handle_custom_loader(self, variant: int) -> tuple[pd.DataFrame, dict[str, str], bytes | None]:
+        loader = self.custom_dataset_loader[variant]
 
-        if loader is None:
-            raise ValueError("No customer dataset loader configured.")
-
-        query_params = QueryParams.get().data
-        result = loader.load(query_params if isinstance(query_params, bytes) else None)
+        if variant == 0:
+            params = QueryParams.get().data
+            if not isinstance(params, bytes):
+                params = None
+        else:
+            params = None
+        result = loader.load(params)
 
         def error_msg() -> str:
             return (
@@ -182,9 +190,21 @@ class DataWidget:
                 raise TypeError(error_msg())
             df, aggregations, params = result
 
-            if not isinstance(aggregations, dict):
+            if params and variant > 0:
+                with st.container(border=True):
+                    st.warning("Params are only supported for the primary loader.", icon="⚠️")
+                    st.text("The parameters")
+                    st.code(params)
+                    st.text("returned by")
+                    st.code(loader)
+                    st.text("will be ignored.")
+
+                params = None
+
+            elif not isinstance(params, bytes):
                 raise TypeError(error_msg())
-            if not isinstance(params, bytes):
+
+            if not isinstance(aggregations, dict):
                 raise TypeError(error_msg())
 
         else:
@@ -277,8 +297,8 @@ class DataWidget:
             f"Showing {'all' if n_df == n_head else 'the first'} `{pretty_head}` of `{pretty_df}` (`{n_head / n_df:.2%}`) rows.",
         )
 
-    def get_data_sources(self) -> dict[DataSource, tuple[str, str]]:
-        sources = {}
+    def get_data_sources(self) -> dict[tuple[DataSource, int | None], tuple[str, str]]:
+        sources: dict[tuple[DataSource, int | None], tuple[str, str]] = {}
 
         qp = QueryParams.get()
         data = qp.data
@@ -286,25 +306,27 @@ class DataWidget:
         if self.sample_data or isinstance(data, tuple):
             if self.sample_data is None:
                 raise ValueError(f"Cannot use {qp!r} with {config.ENABLE_DATA_GENERATOR=}.")
-            sources[DataSource.GENERATE] = (
+            sources[DataSource.GENERATE, None] = (
                 self.sample_data.get_title(),
                 self.sample_data.get_description(),
             )
-        if self.upload is not False:
-            limit = _get_upload_limit()
-            sources[DataSource.USER_UPLOAD] = (
+
+        if self.upload:
+            sources[DataSource.USER_UPLOAD, None] = (
                 DataSource.USER_UPLOAD.value,
-                f"Limit {limit} MB.",
+                f"Limit {_get_upload_limit()} MB.",
             )
+
         if (self.datasets and self.datasets.has_data) or isinstance(data, (int, str)):
-            sources[DataSource.BUNDLED] = (
+            sources[DataSource.BUNDLED, None] = (
                 DataSource.BUNDLED.value,
                 f"Select one of {self.datasets.size} datasets.",
             )
-        if self.custom_dataset_loader:
-            sources[DataSource.CUSTOM_DATASET_LOADER] = (
-                self.custom_dataset_loader.get_title(),
-                self.custom_dataset_loader.get_description(),
+
+        for i, loader in enumerate(self.custom_dataset_loader):
+            sources[(DataSource.CUSTOM_DATASET_LOADER, i)] = (
+                loader.get_title(),
+                loader.get_description(),
             )
 
         return sources
@@ -401,7 +423,3 @@ class DataWidget:
             use_container_width=True,
             selection_mode="single-column",
         )
-
-
-def _get_upload_limit() -> int:
-    return int(stc.get_option("server.maxUploadSize"))

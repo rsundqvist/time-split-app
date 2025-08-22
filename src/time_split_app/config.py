@@ -62,11 +62,13 @@ DATE_ONLY: bool = _env.read_bool("DATE_ONLY", True)
 """If ``True``, lock set the app in `date_only` mode wherever possible."""
 
 # Image extensions.
-DATASET_LOADER: str = _env.read_str("DATASET_LOADER")
+DATASET_LOADER: list[str] = _env.read_str("DATASET_LOADER", split=",")
 """A custom loader implementation.
 
 * Type: :class:`.DataLoaderWidget`
 * Format: ``path.to.module:ClassName`` (or an instance thereof).
+
+Use comma-separated specs to use multiple custom loaders.
 """
 
 SPLIT_SELECT_FN: str = _env.read_str("SPLIT_SELECT_FN")

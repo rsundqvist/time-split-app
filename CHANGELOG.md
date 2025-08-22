@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* Support multiple custom loaders. Params supported only for the primary loader.
+
 ## [1.0.3] - 2025-08-21
 * Fix PyPI trusted publishing.
 

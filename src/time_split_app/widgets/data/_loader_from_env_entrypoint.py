@@ -7,9 +7,8 @@ from time_split_app import config
 
 
 @st.cache_resource
-def from_env_entrypoint() -> DataLoaderWidget | None:
-    value = config.DATASET_LOADER
-    return _from_user_spec(value) if value else None
+def from_env_entrypoint() -> list[DataLoaderWidget]:
+    return [_from_user_spec(value) for value in config.DATASET_LOADER if value]
 
 
 def _from_user_spec(value: str) -> DataLoaderWidget:

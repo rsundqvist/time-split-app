@@ -80,6 +80,25 @@ class CustomLoader(DataLoaderWidget):
         return pd.date_range(start, end, periods=1337)
 
 
+class SecondaryCustomLoader(DataLoaderWidget):
+    def get_title(self) -> str:
+        return "🤷 Another custom loader"
+
+    def get_description(self) -> str:
+        # Specify multiple loaders by using comma-separated specs, e.g.
+        # DATASET_LOADER=app_extensions:CustomLoader,app_extensions:SecondaryCustomLoader
+        return "Params not supported for secondary loaders."
+
+    def load(self, params: bytes | None) -> tuple[pd.DataFrame, dict[str, str], bytes] | pd.DataFrame:
+        if params:
+            raise NotImplementedError
+
+        index = pd.date_range("2019-04-30", "2019-05-11")
+        df = pd.DataFrame(index=index)
+        df["x"] = 1
+        return df, {"x": "max"}, bytes()
+
+
 def dummy_select_fn():
     st.subheader(f"Using `{dummy_select_fn.__name__}` to select params!", divider=True)
     days = st.slider("Selecty days", 1, 14, 7)
