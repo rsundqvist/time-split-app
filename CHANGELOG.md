@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-08-22
+
 ### Added
 * Support multiple custom loaders. Params supported only for the primary loader.
 
@@ -80,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/rsundqvist/time-split-app/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/rsundqvist/time-split-app/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/rsundqvist/time-split-app/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/rsundqvist/time-split-app/compare/v1.0.0...v1.0.1
