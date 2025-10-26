@@ -7,10 +7,12 @@ services:
       - "8501:8501"
     env_file: ./.env
     environment:
+      DEBUG: false
       EXTRA_PIP_PACKAGES: s3fs
+      REQUIRE_DATASETS: true
+      DATASETS_CONFIG_PATH: s3://my-bucket/data/remote-datasets.toml
     network_mode: host
     volumes:
-      - ./data/remote-datasets.toml:/home/streamlit/datasets.toml:ro
       - ../app_extensions.py:/home/streamlit/app_extensions.py:ro
 
   minio:
