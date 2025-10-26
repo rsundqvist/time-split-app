@@ -244,7 +244,7 @@ class DataWidget:
             f"elements, using `{format_bytes(memory.sum())}` of memory (including `{format_bytes(memory['Index'])}` for"
             f" `index='{df.index.name}'` of type `{type(df.index).__name__}[{df.index.dtype}]`)."
         )
-        st.dataframe(details, use_container_width=True)
+        st.dataframe(details, width="stretch")
 
         # Record performance
         seconds = perf_counter() - start
@@ -263,7 +263,7 @@ class DataWidget:
         st.subheader("Data", divider="rainbow")
 
         df, info = self._head(df)
-        st.dataframe(df.reset_index(), hide_index=False, use_container_width=True)
+        st.dataframe(df.reset_index(), hide_index=False, width="stretch")
         st.caption(info)
 
     def plot_data(self, df: pd.DataFrame) -> None:
@@ -420,6 +420,6 @@ class DataWidget:
         st.dataframe(
             pd.Series(summary).to_frame().T,
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             selection_mode="single-column",
         )

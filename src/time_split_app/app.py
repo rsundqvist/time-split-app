@@ -74,7 +74,7 @@ with about_tab:
         PERFORMANCE_TWEAKS_WIDGET.update_config()
 
 with sidebar_top:
-    with st.popover("⚙️ Configure data", use_container_width=True):
+    with st.popover("⚙️ Configure data", width="stretch"):
         df, limits, data_source, default_aggregations, dataset = DATA_WIDGET.select_data()
         aggregations = AGGREGATION_WIDGET.configure(df, default_aggregations)
         # df, limits = DATA_WIDGET.select_range_subset(df)

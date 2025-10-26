@@ -25,7 +25,7 @@ classifiers = [
 requires-python = ">=3.11"
 
 dependencies = [
-    "streamlit               >= 1.47.1",
+    "streamlit               >= 1.49.1",
     "pandas                  >= 2.0.3",
     "rics                    >= 6.0.2",
     # Core lib dependencies
@@ -46,18 +46,15 @@ documentation = "https://time-fold.readthedocs.io"
 "Changelog" = "https://github.com/rsundqvist/time-split-app/blob/master/CHANGELOG.md"
 
 [tool.poetry.group.manual-extras.dependencies]
-# Extras that must be available for docs + tests go here. Doc/test-only deps go in their respective groups.
-
-pyarrow = "~19.0.1"
-polars = { version = "~1.32.2", extras = ["pandas"] }
+pyarrow = "~22.0.0"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
 
 [tool.poetry.group.test.dependencies]
-pytest = "~8.4.1"
-coverage = "~7.10.3"
-pytest-cov = "~6.2.1"
+pytest = "~8.4.2"
+coverage = "~7.11.0"
+pytest-cov = "~7.0.0"
 
 # Needed for manual testing using dev-scripts, namely the dev/update-datasets.py.
 click = "~8.2.1"
@@ -65,13 +62,13 @@ tomli-w = "~1.2.0"
 s3fs = "2025.7.0"
 
 [tool.poetry.group.devops.dependencies]
-invoke = "~2.2.0"
-mypy = "~1.17.1"
-ruff = "~0.12.8"
+invoke = "~2.2.1"
+mypy = "~1.18.2"
+ruff = "~0.14.2"
 
-safety = "~3.6.0"
+safety = "~3.6.2"
 codespell = "~2.4.1"
-bump2version = "==1.0.1"
+bump2version = "~1.0.1"
 
 [tool.ruff]
 line-length = 120
@@ -121,7 +118,6 @@ ignore = [
     "ANN401",
     "TID252", # Prefer absolute imports over relative imports from parent modules
     "TRY003",
-    "PD901", # Avoid using the generic variable name `df` for DataFrames
     "PLC0415", # `import` should be at the top-level of a file
     "PLR0913", #
     "SIM108", # Use ternary operator - coverage issue, see https://github.com/nedbat/coveragepy/issues/509

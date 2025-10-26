@@ -25,7 +25,7 @@ class FoldOverviewWidget:
             "Future data time": " / ".join(format_seconds(counts.future_data) for counts in hours),
         }
 
-        st.dataframe(pd.Series(overview, name="Kept / Removed / Total").to_frame().T, use_container_width=True)
+        st.dataframe(pd.Series(overview, name="Kept / Removed / Total").to_frame().T, width="stretch")
 
     @classmethod
     def get_data_utilization(cls, splits: DatetimeSplits, limits: tuple[pd.Timestamp, pd.Timestamp]) -> tuple[int, int]:

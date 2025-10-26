@@ -159,7 +159,7 @@ class AggregationWidget:
                 lambda row: np.where([row["fold_no"] % 2 == 1] * len(row), self._props, ""),
                 axis=1,
             ),
-            use_container_width=True,
+            width="stretch",
         )
 
         # Record performance

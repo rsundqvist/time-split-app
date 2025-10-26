@@ -25,7 +25,7 @@ class TestBadIndex:
         path = Path(__file__).parent / "bad-index-type.toml"
         config = load_dataset_configs(path)[0]
 
-        with pytest.raises(TypeError, match="Bad index; expected a DatetimeIndex but got Index."):
+        with pytest.raises(TypeError, match=r"Bad index; expected a DatetimeIndex but got Index."):
             load_dataset(config)
 
     def test_duplicate_index(self):

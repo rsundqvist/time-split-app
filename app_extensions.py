@@ -155,7 +155,7 @@ def add_guide():
     label = "Random noise!"
     color = "green"
     title = f"This app uses a :primary[*custom plot function*] which adds the :{color}[*{label}*] region."
-    with left.popover(title, icon="ℹ️", use_container_width=True):
+    with left.popover(title, icon="ℹ️", width="stretch"):
         st.subheader("Customizing the `📊 Folds` plot.", divider=True)
 
         file = f"/home/streamlit/{__name__}.py"  # Cheat - streamlit.app doesn't use the Docker image.
@@ -176,7 +176,7 @@ def add_guide():
         st.write(text)
 
     title = f"This app uses a custom :primary[*{DataLoaderWidget.__name__}*] implementation."
-    with right.popover(title, icon="ℹ️", use_container_width=True):
+    with right.popover(title, icon="ℹ️", width="stretch"):
         st.subheader("Custom Data Loader widgets.", divider=True)
 
         env = f"{DATASET_LOADER=}".replace("'", "")

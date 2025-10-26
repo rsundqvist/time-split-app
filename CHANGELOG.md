@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+* Require `streamlit >= 1.49.1` and fix warnings.
+
 ## [1.1.0] - 2025-08-22
 
 ### Added

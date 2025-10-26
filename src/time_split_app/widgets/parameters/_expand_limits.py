@@ -76,7 +76,7 @@ class ExpandLimitsWidget:
                 lambda _: np.where(~same, self.change_props, self.no_change_props),
                 axis=0,
             ),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
 

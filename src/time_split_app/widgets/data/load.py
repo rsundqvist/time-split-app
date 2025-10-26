@@ -53,7 +53,7 @@ def _error_on_unaggregated_data(df: _pd.DataFrame) -> _t.Never:
     duplicated_df = df.loc[duplicated]
     max_to_show = 5
     samples = duplicated_df.head(max_to_show).sort_index() if len(duplicated_df) > max_to_show else duplicated_df
-    _st.dataframe(samples.reset_index(), hide_index=False, use_container_width=True)
+    _st.dataframe(samples.reset_index(), hide_index=False, width="stretch")
     _st.write(f"Showing `{len(samples)}/{len(duplicated_df)}` duplicated rows. Original `shape={df.shape}`.")
 
     _st.stop()

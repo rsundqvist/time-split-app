@@ -106,7 +106,7 @@ def show_permalink(
     link = link_fn(host=host, **permalink_kwargs)
     st.write(f"Click [here]({link}) for sharable permalink.")
 
-    with st.popover("🤝 Show permalink details", use_container_width=True):
+    with st.popover("🤝 Show permalink details", width="stretch"):
         if warn:
             st.warning(f"May not be accurate; {config.PERMALINK_BASE_URL=} not set.", icon="⚠️")
 

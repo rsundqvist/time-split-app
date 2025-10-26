@@ -72,7 +72,7 @@ class PerformanceTweaksWidget:
 
         with st.form("server-config-form"):
             new_values = self._update_config()
-            st.form_submit_button("Apply", type="primary", use_container_width=True)
+            st.form_submit_button("Apply", type="primary", width="stretch")
 
         for key, value in new_values.items():
             setattr(config, key, value)
@@ -86,7 +86,7 @@ class PerformanceTweaksWidget:
 
         df = pd.concat([user, server], axis=1).T.style.apply(_highlight_lower)
 
-        st.dataframe(df, use_container_width=True, hide_index=False)
+        st.dataframe(df, width="stretch", hide_index=False)
 
     def _update_config(self) -> ValuesDict:
         new_values: ValuesDict = {}
