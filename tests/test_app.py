@@ -57,9 +57,20 @@ def verify_frames(runner: AppTest) -> None:
     assert frames == [
         (1, ["Fold counts", "Data time", "Future data time"]),
         (
-            6,
-            ["fold_no", "fold", "dataset", "column 0", "column 1", "column 2", "n_rows", "n_hours"],
-        ),  # QueryParams.n_splits=3
+            3,
+            [
+                ("Data", "column 0"),
+                ("Data", "column 1"),
+                ("Data", "column 2"),
+                ("Data", "n_hours"),
+                ("Data", "n_rows"),
+                ("Future data", "column 0"),
+                ("Future data", "column 1"),
+                ("Future data", "column 2"),
+                ("Future data", "n_hours"),
+                ("Future data", "n_rows"),
+            ],
+        ),
         (1000, ["timestamp", "column 0", "column 1", "column 2"]),
         (2, ["FIGURE_DPI", "PLOT_RAW_TIMESERIES", "PLOT_AGGREGATIONS_PER_FOLD", "MAX_SPLITS"]),
         (1, ["Rows", "Cols", "Start", "Span", "End"]),

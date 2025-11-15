@@ -28,9 +28,9 @@ def primary(
     st.header("Folds", divider="rainbow")
 
     with st.container(border=True):
-        left, right = st.columns([20, 4])
+        left, right = st.columns([20, 3])
         with right, st.container(border=True):
-            st.subheader("Plot preferences", divider=True)
+            st.subheader("Plot style", divider=True)
             plot_kwargs = plot_folds_widget.select()
         with left:
             plot_folds_widget.plot(split_kwargs, df, **plot_kwargs)

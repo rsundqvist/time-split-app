@@ -3,18 +3,18 @@ from concurrent.futures import ThreadPoolExecutor
 from time import perf_counter
 from typing import Collection
 
-import numpy as np
 import pandas as pd
 import streamlit as st
+from matplotlib import colormaps
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-
 from rics.strings import format_seconds
 from time_split._frontend._to_string import stringify
 from time_split.integration.pandas import split_pandas
+from time_split.types import DatetimeIndexSplitterKwargs
+
 from time_split_app import config
 from time_split_app._logging import log_perf
-from time_split.types import DatetimeIndexSplitterKwargs
 
 
 class AggregationWidget:
@@ -152,15 +152,12 @@ class AggregationWidget:
 
         agg = self._aggregate(df, split_kwargs, aggregations)
 
-        pretty = agg.reset_index()
-        pretty["fold"] = pretty["fold"].map(lambda ts: f"{stringify(ts)} ({ts.day_name()})")
-        st.dataframe(
-            pretty.style.apply(
-                lambda row: np.where([row["fold_no"] % 2 == 1] * len(row), self._props, ""),
-                axis=1,
-            ),
-            width="stretch",
-        )
+        left, right = st.columns([20, 3])
+        with right, st.container(border=True):
+            st.subheader("Table style", divider=True)
+            table = self._format_table(agg)
+        with left:
+            st.dataframe(table)
 
         # Record performance
         n_folds = agg.index.get_level_values("fold").nunique()
@@ -192,6 +189,56 @@ class AggregationWidget:
             frames[(len(frames), fold.training_date)] = agg.T
 
         return pd.concat(frames, names=["fold_no", "fold", "dataset"])
+
+    @classmethod
+    def _format_table(cls, df: pd.DataFrame) -> "pd.io.formats.style.Styler":
+        datasets = df.index.get_level_values("dataset").unique()
+        columns = df.columns
+
+        with st.popover("Format", width="stretch", icon="✏️"):
+            formatters = {}
+            for column in columns:
+                if column == "n_rows":
+                    fmt = "{:.0f}"
+                else:
+                    default = "{:.2f}"
+                    fmt = st.text_input(f"Select `{column!r}` format.", default)
+                    if not fmt:
+                        fmt = "{}"
+
+                for dataset in datasets:
+                    formatters[(column, dataset)] = fmt
+
+        df = df.unstack(level="dataset")
+        if st.toggle("Pretty folds", value=True, help="Uncheck to display timestamps."):
+            index = df.index.get_level_values("fold").map(lambda ts: f"{stringify(ts)} ({ts.day_name()})")
+            df.index = df.index.set_levels(index, level="fold")
+
+        if st.toggle(
+            "Dataset out",
+            value=True,
+            help="Use the dataset (e.g. `Future data`) instead of the column itself (e.g. `n_rows`) as the outer level in the table.",
+        ):
+            df = df.reorder_levels([1, 0], axis="columns")
+            formatters = {(dataset, column): fmt for (column, dataset), fmt in formatters.items()}
+
+        df = df.sort_index(axis="columns")
+
+        styler = df.style
+        styler = styler.format(formatters)
+
+        disabled = "🚫 Disabled"
+        options = [disabled] + sorted(colormaps)
+        cmap = st.selectbox(
+            "Colormap",
+            options,
+            options.index("PuBu"),
+            help="Matplotlib [colormap](https://matplotlib.org/stable/users/explain/colors/colormaps.html) to use.",
+        )
+        if cmap != disabled:
+            styler = styler.background_gradient(cmap)
+
+        return styler
 
     def configure(self, df: pd.DataFrame, defaults: dict[str, str] | None = None) -> dict[str, str]:
         with st.container(border=True):
