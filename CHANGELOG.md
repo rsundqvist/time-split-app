@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Updated a few broken links.
+* Fix row and hour count in the `📈 Aggregations per fold` view.
 
 ## [1.1.0] - 2025-08-22
 

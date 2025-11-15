@@ -184,9 +184,10 @@ class AggregationWidget:
             data = fold.data.agg(aggregations).rename("Data")
             future_data = fold.future_data.agg(aggregations).rename("Future data")
 
+            # TODO Fixa dessa! Ska matcha "Row counts" i figur!!
             agg = pd.concat([data, future_data], axis=1)
-            agg.loc["n_rows", [data.name, future_data.name]] = list(map(len, (fold.data, fold.future_data)))
-            agg.loc["n_hours", [data.name, future_data.name]] = list(map(_get_timedelta, (fold.data, fold.future_data)))
+            agg.loc["n_rows", [data.name, future_data.name]] = [len(fold.data), len(fold.future_data)]
+            agg.loc["n_hours", [data.name, future_data.name]] = [_hours(fold.data), _hours(fold.future_data)]
 
             frames[(len(frames), fold.training_date)] = agg.T
 
@@ -223,5 +224,8 @@ class AggregationWidget:
         return aggregations
 
 
-def _get_timedelta(s: pd.Series) -> pd.Timedelta:
-    return (s.index.max() - s.index.min()).total_seconds() / 60
+def _hours(s: pd.Series) -> float:
+    timedelta = s.index.max() - s.index.min()
+    seconds = float(timedelta.total_seconds())
+    hours = seconds / (60 * 60)
+    return hours
