@@ -1,6 +1,7 @@
 """CLI entrypoint."""
 
 import logging
+import os
 import re
 import stat
 import subprocess
@@ -35,12 +36,18 @@ def get_path() -> None:
 
 
 @main.command(name="start")
-def start() -> None:
+@click.option("--port", default=8501, help="Bind port.", show_default=True)
+def start(port: int) -> None:
     """Start the application."""
-    cmd = ["streamlit", "run", str(_get_app_path())]
+    address = "localhost"
+    cmd = ["streamlit", "run", f"--server.port={port}", f"--server.address={address}", str(_get_app_path())]
 
     click.secho(" ".join(cmd), fg="green")
-    subprocess.run(cmd, check=False)  # noqa: S603
+    subprocess.run(  # noqa: S603
+        cmd,
+        check=False,
+        env={**os.environ, "PERMALINK_BASE_URL": f"http://{address}:{port}/"},
+    )
 
 
 @main.command(name="new")
