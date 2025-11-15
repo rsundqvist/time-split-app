@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Python `3.14` is now fully tested and supported in CI/CD.
+
 ### Changed
 * Require `streamlit >= 1.49.1` and fix warnings.
 

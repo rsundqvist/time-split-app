@@ -1,4 +1,4 @@
-ARG PYTHON_BASE=3.13-slim
+ARG PYTHON_BASE=3.14-slim
 ARG _VIRTUAL_ENV=/opt/venv
 
 FROM python:$PYTHON_BASE AS build
@@ -20,7 +20,7 @@ RUN apt-get update && \
 
 # Poetry setup
 ENV POETRY_HOME=/opt/poetry
-ENV POETRY_VERSION=2.1.3
+ENV POETRY_VERSION=2.2.1
 RUN python -m venv $POETRY_HOME && \
     $POETRY_HOME/bin/pip install poetry==$POETRY_VERSION
 
