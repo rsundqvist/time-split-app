@@ -42,7 +42,7 @@ def primary(
                 "Code snippets",
                 divider="rainbow",
                 help=(
-                    "The [integration](https://time-split.readthedocs.io/en/stable/generated/time_split.integration.html)"
+                    "The [integration](https://time-split.readthedocs.io/en/stable/api/time_split.integration.html)"
                     " modules accept the same parameters as `time_fold.split()`."
                 ),
             )
@@ -68,8 +68,8 @@ def primary(
 
             st.write(
                 """
-                * Click [here](https://time-split.readthedocs.io/en/stable/generated/time_split.html#time_split.split) for `split()` docs.
-                * Click [here](https://time-split.readthedocs.io/en/stable/generated/time_split.html#time_split.plot) for `plot()` docs.
+                * Click [here](https://time-split.readthedocs.io/en/stable/api/time_split.html#time_split.split) for `split()` docs.
+                * Click [here](https://time-split.readthedocs.io/en/stable/api/time_split.html#time_split.plot) for `plot()` docs.
                 """
             )
 
@@ -131,7 +131,7 @@ def show_permalink(
             with right:
                 st.write("Output parameters.")
                 st.code(pformat(convert(permalink_kwargs.copy()), width=35))
-            doc = "https://time-split.readthedocs.io/en/stable/generated/app.support.html#time_split.app.create_explorer_link"
+            doc = "https://time-split.readthedocs.io/en/stable/generated/time_split.app.html#time_split.app.create_explorer_link"
             st.caption(
                 f"Parameters may be [converted]({doc}) to equivalent values. "
                 "Note that `data` is called `available` by the core library."

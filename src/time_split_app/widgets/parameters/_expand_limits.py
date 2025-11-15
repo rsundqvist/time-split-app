@@ -138,8 +138,8 @@ class ExpandLimitsWidget:
 EXPAND_LIMITS_HELP = (
     "See the [User guide](https://time-split.readthedocs.io/en/stable/guide/expand-limits.html) for help."
     " Automatic expansion is configurable using the global "
-    " [`auto_expand_limits`](https://time-split.readthedocs.io/en/stable/generated/time_split.settings.html#time_split.settings.auto_expand_limits)"
+    " [`auto_expand_limits`](https://time-split.readthedocs.io/en/stable/api/time_split.settings.html#time_split.settings.auto_expand_limits)"
     " configuration object. Manual input is validated using the "
-    "[`expand_limits()`](https://time-split.readthedocs.io/en/stable/generated/time_split.support.html#time_split.support.expand_limits)"
+    "[`expand_limits()`](https://time-split.readthedocs.io/en/stable/api/time_split.support.html#time_split.support.expand_limits)"
     " support function."
 )

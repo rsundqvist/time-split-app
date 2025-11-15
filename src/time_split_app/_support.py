@@ -56,7 +56,7 @@ These values cannot be changed.
 
 {config.get_server_config_info()}
 
-See https://hub.docker.com/repository/docker/rsundqvist/time-split/ to spawn custom servers.
+See https://hub.docker.com/r/rsundqvist/time-split/ to spawn custom servers.
 
 ### Version
 Server version is `{app_version}`, using `time-split=={lib_version}`. To install, run
