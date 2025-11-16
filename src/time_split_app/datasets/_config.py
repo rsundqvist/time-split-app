@@ -1,7 +1,9 @@
+import hashlib
 import tomllib
 from dataclasses import dataclass, field
+from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, overload
 
 USE_ORIGINAL_INDEX = "__INDEX__"
 """Special value indicating that the dataset already has a datetime-like index."""
@@ -39,21 +41,35 @@ class DatasetConfig:
     """
 
 
-def load_dataset_configs(file: str | Path) -> list[DatasetConfig]:
+@overload
+def load_dataset_configs(file: str | Path, *, return_digest: Literal[True]) -> tuple[bytes, list[DatasetConfig]]: ...
+
+
+@overload
+def load_dataset_configs(file: str | Path, *, return_digest: Literal[False] = False) -> list[DatasetConfig]: ...
+
+
+def load_dataset_configs(
+    file: str | Path,
+    *,
+    return_digest: bool = False,
+) -> tuple[bytes, list[DatasetConfig]] | list[DatasetConfig]:
     """Read dataset configs from file.
 
     Returns one :class:`.DatasetConfig` object per top-level section in `file`.
 
     Args:
         file: Path to a TOML file.
+        return_digest: If ``True``, return hash digest of `file`.
 
     Returns:
-        A list of dataset configs
+        A tuple ``(hash_digest, [DatasetConfig, ...])``, or just the configs if ``return_digest=False`` (default).
     """
     labels: dict[str, DatasetConfig] = {}
     rv: list[DatasetConfig] = []
     config: dict[str, Any]
-    for section, config in _read_toml(file).items():
+    digest, raw_dict = _read_toml(file)
+    for section, config in raw_dict.items():
         config.setdefault("label", section)
 
         try:
@@ -62,28 +78,37 @@ def load_dataset_configs(file: str | Path) -> list[DatasetConfig]:
             e.add_note(f"{section=}")
             e.add_note(f"{config=}")
             e.add_note(f"{file=}")
+            e.add_note(f"{digest=}")
             raise
 
         rv.append(cfg)
 
-    return rv
+    if return_digest:
+        return digest, rv
+    else:
+        return rv
 
 
-def _read_toml(file: str | Path) -> dict[str, Any]:
+def _read_toml(file: str | Path) -> tuple[bytes, dict[str, Any]]:
     file = str(file)
+
+    data: bytes
 
     try:
         import fsspec  # type: ignore[import-untyped]
 
         with fsspec.open(file, "rb") as f:
-            return tomllib.load(f)
+            data = f.read()
     except ImportError as e:
         if "://" in file:
             msg = f"Cannot load dataset config {file=} without package '{e.name}'."
             raise ImportError(msg) from e
 
     with Path(file).open("rb") as f:
-        return tomllib.load(f)
+        data = f.read()
+
+    sha256 = hashlib.sha256(data, usedforsecurity=False).digest()
+    return sha256, tomllib.load(BytesIO(data))
 
 
 def _create(raw: dict[str, Any], *, seen: dict[str, DatasetConfig]) -> DatasetConfig:

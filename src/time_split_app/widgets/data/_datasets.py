@@ -1,4 +1,3 @@
-import hashlib
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, UTC
 from time import perf_counter
@@ -63,11 +62,10 @@ class DatasetWidget:
     @staticmethod
     def load_datasets() -> list[Dataset]:
         """Load configured datasets."""
-        configs, configs_loaded = load_dataset_configs()
+        configs, configs_loaded, digest = load_dataset_configs()
 
         if configs:
-            sha256 = hashlib.new("sha256", str(configs).encode(), usedforsecurity=False).hexdigest()
-            datasets, datasets_loaded = load_datasets(sha256, configs)
+            datasets, datasets_loaded = load_datasets(digest, configs)
         else:
             datasets_loaded = None
             datasets = []
@@ -88,18 +86,18 @@ class DatasetWidget:
 
     @property
     def size(self) -> int:
-        configs, _ = load_dataset_configs()
+        configs, _, _ = load_dataset_configs()
         return len(configs) if configs else 0
 
 
 @st.cache_resource(ttl=config.DATASET_CONFIG_CACHE_TTL, max_entries=1)
-def load_dataset_configs() -> tuple[tuple[DatasetConfig, ...] | None, datetime]:
+def load_dataset_configs() -> tuple[tuple[DatasetConfig, ...] | None, datetime, bytes]:
     """Load configuration file."""
     now = datetime.now(UTC)
 
     path = config.DATASETS_CONFIG_PATH
     try:
-        configs = load_dataset_configs_from_path(path)
+        digest, configs = load_dataset_configs_from_path(path, return_digest=True)
     except Exception as e:
         from time_split_app._logging import LOGGER
 
@@ -110,13 +108,13 @@ def load_dataset_configs() -> tuple[tuple[DatasetConfig, ...] | None, datetime]:
             force_exit(52)  # regular exit will not halt the underlying server.
 
         LOGGER.warning(f"Failed to read dataset config {path=}: {e!r}. No datasets will be loaded.", exc_info=False)
-        return None, now
+        return None, now, b""
 
-    return (*configs,), now
+    return (*configs,), now, digest
 
 
 @st.cache_resource(ttl=config.DATASET_CACHE_TTL, max_entries=1)
-def load_datasets(sha256: str, _cfgs: tuple[DatasetConfig, ...]) -> tuple[list[Dataset], datetime]:
+def load_datasets(digest: bytes, _cfgs: tuple[DatasetConfig, ...]) -> tuple[list[Dataset], datetime]:
     """Load datasets from configuration."""
     start = perf_counter()
 
@@ -135,10 +133,10 @@ def load_datasets(sha256: str, _cfgs: tuple[DatasetConfig, ...]) -> tuple[list[D
 
     seconds = perf_counter() - start
     log_perf(
-        f"Loaded {len(_cfgs)} datasets using {max_workers} threads in {format_seconds(seconds)}",
+        f"Loaded {len(_cfgs)} datasets using {max_workers} threads in {format_seconds(seconds)}.",
         df={ds.label: ds.df for ds in datasets},
         seconds=seconds,
-        extra={"sha256": f"0x{sha256}"},
+        extra={"sha256": f"0x{digest.hex()}"},
     )
     return datasets, now
 

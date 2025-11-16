@@ -118,7 +118,7 @@ Default timings:
 * The dataframes returned by the dataset loader are cached for `config.DATASET_CACHE_TTL` seconds (default = 12 hours).
 * The dataset configuration file is read every `config.DATASET_CONFIG_CACHE_TTL` seconds (default = 30 seconds).
 
-All datasets are reloaded immediately if the configuration changes, ignoring comments and formatting.
+All datasets are reloaded immediately if the configuration changes file content hash (SHA256) changes.
 
 # Environment variables
 See [config.py](src/time_split_app/config.py) for configurable values.
