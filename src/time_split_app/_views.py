@@ -99,6 +99,8 @@ def primary(
         with mid:
             code_widget.show_plot_code(split_kwargs, plot_kwargs=plot_kwargs, limits=limits)
 
+        code_widget.show_splits(splits)
+
 
 def show_permalink(
     *,
@@ -146,7 +148,7 @@ def show_permalink(
             with right:
                 st.write("Output parameters.")
                 st.code(pformat(convert(permalink_kwargs.copy()), width=35))
-            doc = "https://time-split.readthedocs.io/en/stable/generated/time_split.app.html#time_split.app.create_explorer_link"
+            doc = "https://time-split.readthedocs.io/en/stable/api/time_split.app.html#time_split.app.create_explorer_link"
             st.caption(
                 f"Parameters may be [converted]({doc}) to equivalent values. "
                 "Note that `data` is called `available` by the core library."

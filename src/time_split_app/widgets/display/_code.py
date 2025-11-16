@@ -3,9 +3,9 @@ from typing import Any, Callable, TypeAlias, Self
 
 import pandas as pd
 import streamlit as st
+from time_split.types import DatetimeIndexSplitterKwargs, DatetimeTypes, DatetimeSplits, DatetimeSplitBounds
 
 from time_split_app.widgets.types import TypePreference
-from time_split.types import DatetimeIndexSplitterKwargs, DatetimeTypes
 
 AnyTimestamp: TypeAlias = str | datetime.date | datetime.datetime | pd.Timestamp
 AnyTimedelta: TypeAlias = str | datetime.timedelta | pd.Timedelta
@@ -30,6 +30,7 @@ class CodeWidget:
         selection = st.radio(
             "type-preference",
             examples,
+            index=2,
             horizontal=True,
             captions=captions,
             label_visibility="collapsed",
@@ -54,6 +55,9 @@ class CodeWidget:
         if isinstance(arg, dict):
             for key, value in arg.items():
                 arg[key] = self.convert(value)
+        elif isinstance(arg, DatetimeSplitBounds):
+            items = (self.convert(a) for a in arg)
+            return DatetimeSplitBounds(*items)
         elif isinstance(arg, (set, list, tuple)):
             arg_type = type(arg)
             return arg_type(self.convert(a) for a in arg)
@@ -71,6 +75,7 @@ class CodeWidget:
 
         text = self._make_call("splits", "split", **split_kwargs, available=limits)
         text = self._with_imports(text, self._type)
+        text = self._add_logged_splits(text)
         st.code(text)
 
     def show_plot_code(
@@ -89,6 +94,23 @@ class CodeWidget:
         text = self._with_imports(text, self._type)
         st.code(text)
 
+    def show_splits(self, splits: DatetimeSplits) -> None:
+        text = "\n".join(f"    {s!r}," for s in self.convert(splits))
+        text = f"\nsplits = [\n{text}\n]"
+
+        if self._type != TypePreference.PANDAS:
+            text = text.replace(DatetimeSplitBounds.__name__, "")
+            for field in DatetimeSplitBounds._fields:
+                text = text.replace(f"{field}=", "")
+        else:
+            text = "from time_split.types import DatetimeSplitBounds\n" + text
+
+        text = self._with_imports(text, self._type)
+        if self._type == TypePreference.PANDAS:
+            text = self._add_logged_splits(text)
+        text = self._strip_midnight(text)
+        st.code(text)
+
     @classmethod
     def _make_call(cls, __assign: str, __func: str, **kwargs: Any) -> str:
         lines = []
@@ -103,7 +125,9 @@ class CodeWidget:
                 lines.append(f"    {key}={value!r},")
         arguments = "\n".join(lines)
 
-        return f"\n{__assign} = time_split.{__func}(\n{arguments}\n)"
+        text = f"\n{__assign} = time_split.{__func}(\n{arguments}\n)"
+        text = cls._strip_midnight(text)
+        return text
 
     @staticmethod
     def _with_imports(text: str, type_preference: TypePreference) -> str:
@@ -173,3 +197,11 @@ class CodeWidget:
             return pd.Timedelta(timedelta)
 
         raise TypeError(f"{type_preference=}")
+
+    @classmethod
+    def _add_logged_splits(cls, text: str) -> str:
+        return text + '\nlogged_splits = time_split.log_split_progress(splits, logger="<logger-or-name>")'
+
+    @classmethod
+    def _strip_midnight(cls, text: str) -> str:
+        return text.replace(" 00:00:00'", "'").replace(", 0, 0)", ")")
