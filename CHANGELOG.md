@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2025-11-16
+
 ### Changed
 * Reload bundled datasets on any config file change (instead of just processed content).
 
@@ -103,7 +105,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/rsundqvist/time-split-app/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/rsundqvist/time-split-app/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/rsundqvist/time-split-app/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/rsundqvist/time-split-app/compare/v1.0.2...v1.0.3
