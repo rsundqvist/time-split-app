@@ -8,10 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Python `3.14` is now fully tested and supported in CI/CD.
+* Python `3.14` is now fully tested and supported in CI/CD.
+* Add `--port=8501` option to CLI.
+* Add color and formatting options for `📈 Aggregations per fold` table.
+* Add table display option the `📊 Folds` view.
 
 ### Changed
 * Require `streamlit >= 1.49.1` and fix warnings.
+* Update column style of `📈 Aggregations per fold` table.
+* The `📊 Folds / Code snippets` section now uses `🐼 Pandas types` by default.
+* The `📊 Folds / Code snippets` section now shows splits as a list as well.
 
 ### Fixed
 * Updated a few broken links.
