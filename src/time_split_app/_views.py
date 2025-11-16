@@ -4,8 +4,10 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 from rics.strings import format_seconds
+from streamlit.delta_generator import DeltaGenerator
+from time_split._frontend._to_string import _PrettyTimestamp
 from time_split.app import create_explorer_link
-from time_split.types import DatetimeIndexSplitterKwargs, DatetimeSplits, DatetimeTypes
+from time_split.types import DatetimeIndexSplitterKwargs, DatetimeSplitBounds, DatetimeSplits, DatetimeTypes
 
 from time_split_app import config
 from time_split_app._select_link_impl_from_entrypoint import get_user_link_fn
@@ -28,12 +30,30 @@ def primary(
     st.header("Folds", divider="rainbow")
 
     with st.container(border=True):
-        left, right = st.columns([20, 3])
-        with right, st.container(border=True):
-            st.subheader("Plot style", divider=True)
-            plot_kwargs = plot_folds_widget.select()
-        with left:
-            plot_folds_widget.plot(split_kwargs, df, **plot_kwargs)
+        display_container, config_container = st.columns([20, 3])
+
+        with config_container:
+            # TODO(streamlit): https://github.com/streamlit/streamlit/issues/9870
+            #   segmented_control with a required value
+            figure_option = "📊 Show Figure"
+            choice = st.selectbox(
+                "Fold display style",
+                [figure_option, "📝 Show Table"],
+                help="Determines how folds are visualized.\n\nTODO: https://github.com/streamlit/streamlit/issues/9870",
+            )
+            show_figure = choice == figure_option
+
+        plot_kwargs = {}
+        if show_figure:
+            plot_kwargs = folds_as_figure(df, plot_folds_widget, split_kwargs, display_container, config_container)
+        else:
+            folds_as_table(splits, display_container, config_container)
+
+        with config_container:
+            used, avail = fold_overview_widget.get_data_utilization(splits, limits)
+            st.write(
+                f"*Using `{format_seconds(used)}` of `{format_seconds(avail)}` **({used / avail:.1%})** of the available data range.*"
+            )
 
     with st.container(border=True):
         left, right = st.columns([20, 4])
@@ -73,11 +93,6 @@ def primary(
                 """
             )
 
-            used, avail = fold_overview_widget.get_data_utilization(splits, limits)
-            st.caption(
-                f"Using `{format_seconds(used)}` of `{format_seconds(avail)}` (`{used / avail:.1%}`) of the available data range."
-            )
-
         with left:
             code_widget.show_split_code(split_kwargs, limits=limits)
             fold_overview_widget.show_overview(splits, all_splits=all_splits)
@@ -92,7 +107,7 @@ def show_permalink(
     limits: tuple[DatetimeTypes, DatetimeTypes] | str | bytes,
 ) -> None:
     permalink_kwargs = {**split_kwargs, **plot_kwargs, "data": limits}
-    permalink_kwargs.pop("bar_labels")  # Not supported
+    permalink_kwargs.pop("bar_labels", None)  # Not supported
 
     host = config.PERMALINK_BASE_URL
     if host == "":
@@ -136,3 +151,46 @@ def show_permalink(
                 f"Parameters may be [converted]({doc}) to equivalent values. "
                 "Note that `data` is called `available` by the core library."
             )
+
+
+def folds_as_figure(
+    df: pd.DataFrame,
+    plot_folds_widget: PlotFoldsWidget,
+    split_kwargs: DatetimeIndexSplitterKwargs,
+    display_container: DeltaGenerator,
+    config_container: DeltaGenerator,
+) -> dict[str, Any]:
+    with config_container, st.container(border=True):
+        st.subheader("Plot style", divider=True)
+        plot_kwargs = plot_folds_widget.select()
+
+    with display_container:
+        plot_folds_widget.plot(split_kwargs, df, **plot_kwargs)
+
+    return plot_kwargs
+
+
+def folds_as_table(
+    splits: DatetimeSplits,
+    display_container: DeltaGenerator,
+    config_container: DeltaGenerator,
+) -> None:
+    url = "https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes"
+
+    with config_container, st.container(border=True):
+        st.subheader("Table style", divider=True)
+        fmt = st.text_input(
+            "✏️️️ Select timestamp format.",
+            value="{.auto}",
+            placeholder="See help for options.",
+            help="Select a property `{.auto}` or `{.iso}` or `{.date}`. You may also use "
+            f"regular datetime [Format Codes]({url}) such as `{{:%Y-%m-%d (%A)}}`.",
+        ).strip()
+        if not fmt:
+            fmt = "{.auto}"
+
+    with display_container:
+        table = pd.DataFrame.from_records(splits, columns=DatetimeSplitBounds._fields).map(_PrettyTimestamp)
+        table.index.name = "fold_no"
+        table = table.map(fmt.format)
+        st.dataframe(table)
