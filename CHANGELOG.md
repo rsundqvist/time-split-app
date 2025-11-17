@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.1] - 2025-11-17
+
 ### Fixed
 * Fix range when using dummy data query (e.g. `?data=1760745600-1763337600`).
 
@@ -108,7 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.1.1...HEAD
+[2.1.1]: https://github.com/rsundqvist/time-split-app/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/rsundqvist/time-split-app/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/rsundqvist/time-split-app/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/rsundqvist/time-split-app/compare/v1.0.3...v1.1.0

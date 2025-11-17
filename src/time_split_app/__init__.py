@@ -4,4 +4,4 @@
 * Repo: https://github.com/rsundqvist/time-split-app/
 """
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
