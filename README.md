@@ -70,14 +70,14 @@ to create a template project to get you started.
 To bundle datasets, specify a configuration file (e.g. `DATASETS_CONFIG_PATH='s3://my-bucket/data/datasets.toml'`)
 with the following keys:
 
-| Key                    | Type             | Required | Description                                                                   |
-|------------------------|------------------|----------|-------------------------------------------------------------------------------|
-| `label`                | `string`         |          | Name shown in the UI. Defaults to section header (i.e. *"my-dataset"* below). |
-| `path`                 | `string`         | Required | First argument to the `pandas` read function.                                 |
-| `index`                | `string`         | Required | Datetime-like column. Will be converted using [pandas.to_datetime()].         |
-| `aggregations`         | `dict[str, str]` |          | Determines function to use in the `📈 Aggregations per fold` tab.             |
-| `description`          | `string`         |          | Markdown. The first line will be used as the summary in the UI.               |
-| `read_function_kwargs` | `dict[str, Any]` |          | Keyword arguments for the `pandas` read function used.                        |
+| Key                    | Type             | Required | Description                                                                    |
+|------------------------|------------------|----------|--------------------------------------------------------------------------------|
+| `label`                | `string`         |          | Name shown in the UI. Defaults to section header (i.e. *"IMDB Titles"* below). |
+| `path`                 | `string`         | Required | First argument to the `pandas` read function.                                  |
+| `index`                | `string`         | Required | Datetime-like column. Will be converted using [pandas.to_datetime()].          |
+| `aggregations`         | `dict[str, str]` |          | Determines function to use in the `📈 Aggregations per fold` tab.              |
+| `description`          | `string`         |          | Markdown. The first line will be used as the summary in the UI.                |
+| `read_function_kwargs` | `dict[str, Any]` |          | Keyword arguments for the `pandas` read function used.                         |
 
 [pandas.to_datetime()]: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_datetime.html
 
@@ -92,7 +92,7 @@ class for internal representation.
 
 ```toml
 [my-dataset]
-label = "Dataset name"
+label = "IMDB Titles"
 path = "s3://my-bucket/data/title_basics.csv"
 index = "from"
 aggregations = { runtimeMinutes = "min", isAdult = "mean" }
@@ -118,7 +118,7 @@ Default timings:
 * The dataframes returned by the dataset loader are cached for `config.DATASET_CACHE_TTL` seconds (default = 12 hours).
 * The dataset configuration file is read every `config.DATASET_CONFIG_CACHE_TTL` seconds (default = 30 seconds).
 
-All datasets are reloaded immediately if the configuration changes file content hash (SHA256) changes.
+All datasets are reloaded immediately if the `DATASETS_CONFIG_PATH` file content hash changes.
 
 # Environment variables
 See [config.py](src/time_split_app/config.py) for configurable values.
