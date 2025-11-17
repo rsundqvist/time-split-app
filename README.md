@@ -70,14 +70,14 @@ to create a template project to get you started.
 To bundle datasets, specify a configuration file (e.g. `DATASETS_CONFIG_PATH='s3://my-bucket/data/datasets.toml'`)
 with the following keys:
 
-| Key                    | Type             | Required | Description                                                                    |
-|------------------------|------------------|----------|--------------------------------------------------------------------------------|
-| `label`                | `string`         |          | Name shown in the UI. Defaults to section header (i.e. *"IMDB Titles"* below). |
-| `path`                 | `string`         | Required | First argument to the `pandas` read function.                                  |
-| `index`                | `string`         | Required | Datetime-like column. Will be converted using [pandas.to_datetime()].          |
-| `aggregations`         | `dict[str, str]` |          | Determines function to use in the `📈 Aggregations per fold` tab.              |
-| `description`          | `string`         |          | Markdown. The first line will be used as the summary in the UI.                |
-| `read_function_kwargs` | `dict[str, Any]` |          | Keyword arguments for the `pandas` read function used.                         |
+| Key                    | Type             | Required | Description                                                                   |
+|------------------------|------------------|----------|-------------------------------------------------------------------------------|
+| `label`                | `string`         |          | Name shown in the UI. Defaults to section header (i.e. *"my-dataset"* below). |
+| `path`                 | `string`         | Required | First argument to the `pandas` read function.                                 |
+| `index`                | `string`         | Required | Datetime-like column. Will be converted using [pandas.to_datetime()].         |
+| `aggregations`         | `dict[str, str]` |          | Determines function to use in the `📈 Aggregations per fold` tab.             |
+| `description`          | `string`         |          | Markdown. The first line will be used as the summary in the UI.               |
+| `read_function_kwargs` | `dict[str, Any]` |          | Keyword arguments for the `pandas` read function used.                        |
 
 [pandas.to_datetime()]: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_datetime.html
 
