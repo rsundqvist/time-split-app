@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+* Fix range when using dummy data query (e.g. `?data=1760745600-1763337600`).
+
 ## [2.1.0] - 2025-11-16
 
 ### Changed

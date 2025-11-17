@@ -7,6 +7,7 @@ from ._data_loader_widget import DataLoaderWidget
 from time_split.types import DatetimeTypes
 
 from time_split_app import config
+from ..types import QueryParams
 
 
 class SampleDataWidget(DataLoaderWidget):
@@ -22,7 +23,9 @@ class SampleDataWidget(DataLoaderWidget):
     def load(cls, params: None | bytes) -> pd.DataFrame:
         if params:
             raise NotImplementedError
-        start, end = cls.select_range()
+
+        data = QueryParams.get().data
+        start, end = cls.select_range(data if isinstance(data, tuple) else None)
         return cls._load_sample_data(start, end).copy()
 
     @classmethod

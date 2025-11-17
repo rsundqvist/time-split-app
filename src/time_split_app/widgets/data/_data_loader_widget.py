@@ -14,9 +14,9 @@ Anchor = Literal["absolute", "relative", "now"]
 AnchorOptions = Collection[Anchor]
 ANCHOR_HELPER: LiteralHelper[Anchor] = LiteralHelper(Anchor, default_name="anchor", normalizer=str.lower)
 
-ABSOLUTE = "absolute"
-NOW = "now"
-RELATIVE = "relative"
+ABSOLUTE: Literal["absolute"] = "absolute"
+NOW: Literal["now"] = "now"
+RELATIVE: Literal["relative"] = "relative"
 
 
 class DataLoaderWidget(abc.ABC):
@@ -112,8 +112,11 @@ class DataLoaderWidget(abc.ABC):
 
         select_datetime = partial(select_datetime, header=False, date_only=date_only)
 
+        explicit_initial_range = True
         if initial is None:
+            explicit_initial_range = False
             initial = initial_range_fn()
+
         initial_start, initial_end = initial
         delta: timedelta = initial_end - initial_start
         duration_widget = DurationWidget.from_delta(delta, date_only)
@@ -124,10 +127,16 @@ class DataLoaderWidget(abc.ABC):
             right.subheader("Select End", divider=True)
 
             left_index, right_index = 0, 0
-            if initial_range_fn is default_initial_range_fn:
+            if explicit_initial_range:
                 try:
-                    left_index = [*start_options].index("relative")
-                    right_index = [*end_options].index("now")
+                    left_index = [*start_options].index(ABSOLUTE)
+                    right_index = [*end_options].index(ABSOLUTE)
+                except Exception:
+                    pass
+            elif initial_range_fn is default_initial_range_fn:
+                try:
+                    left_index = [*start_options].index(RELATIVE)
+                    right_index = [*end_options].index(NOW)
                 except Exception:
                     pass
 
