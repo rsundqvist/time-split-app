@@ -104,8 +104,8 @@ def _read_toml(file: str | Path) -> tuple[bytes, dict[str, Any]]:
             msg = f"Cannot load dataset config {file=} without package '{e.name}'."
             raise ImportError(msg) from e
 
-    with Path(file).open("rb") as f:
-        data = f.read()
+        with Path(file).open("rb") as f:
+            data = f.read()
 
     sha256 = hashlib.sha256(data, usedforsecurity=False).digest()
     return sha256, tomllib.load(BytesIO(data))
