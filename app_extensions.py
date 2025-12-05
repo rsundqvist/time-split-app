@@ -87,12 +87,9 @@ class SecondaryCustomLoader(DataLoaderWidget):
     def get_description(self) -> str:
         # Specify multiple loaders by using comma-separated specs, e.g.
         # DATASET_LOADER=app_extensions:CustomLoader,app_extensions:SecondaryCustomLoader
-        return "Params not supported for secondary loaders."
+        return "I'm another loader!"
 
     def load(self, params: bytes | None) -> tuple[pd.DataFrame, dict[str, str], bytes] | pd.DataFrame:
-        if params:
-            raise NotImplementedError
-
         index = pd.date_range("2019-04-30", "2019-05-11")
         df = pd.DataFrame(index=index)
         df["x"] = 1

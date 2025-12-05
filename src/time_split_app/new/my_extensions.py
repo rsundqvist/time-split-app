@@ -30,6 +30,13 @@ class MyDatasetLoader(DataLoaderWidget):
         """Brief description shown in the `⚙️ Configure data` menu. Uses Markdown syntax."""
         return f"Data created by the `{MyDatasetLoader.__name__}` class."
 
+    def get_prefix(self) -> bytes | None:
+        """Return a loader prefix.
+
+        Used to identify the loader when multiple custom loaders are used. Generated automatically if ``None``.
+        """
+        return None
+
     def load(self, params: bytes | None) -> tuple[pd.DataFrame, dict[str, str], bytes] | pd.DataFrame:
         """Load data.
 

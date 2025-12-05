@@ -30,6 +30,12 @@ class DataLoaderWidget(abc.ABC):
     def get_description(self) -> str:
         """Brief description shown in the `⚙️ Configure data` menu. Uses Markdown syntax."""
 
+    def get_prefix(self) -> bytes | None:
+        """Return a loader prefix.
+
+        Used to identify the loader when multiple custom loaders are used. Generated automatically if ``None``."""
+        return None
+
     @abc.abstractmethod
     def load(self, params: bytes | None) -> tuple[pd.DataFrame, dict[str, str], bytes] | pd.DataFrame:
         """Load data.

@@ -11,7 +11,7 @@ from ._data_loader_widget import DataLoaderWidget
 from time_split_app.datasets import get_pandas_read_function, COMPRESSION_SUFFIXES, FILE_SUFFIXES
 from ..types import DataSource, QueryParams
 from ... import config
-from ..._logging import log_perf
+from ..._logging import log_perf, LOGGER
 from ._datasets import DatasetWidget
 from ._sample_data import SampleDataWidget
 from ._loader_from_env_entrypoint import from_env_entrypoint
@@ -73,14 +73,16 @@ class DataWidget:
         if not options:
             raise ValueError("All data source options have been disabled.")
 
+        variant: int | None = None
         if (query_data := QueryParams.get().data) is None:
             index = 0
         elif isinstance(query_data, tuple):
-            index = options.index((DataSource.GENERATE, None))
+            index = options.index((DataSource.GENERATE, variant))
         elif isinstance(query_data, bytes):
-            index = options.index((DataSource.CUSTOM_DATASET_LOADER, 0))
+            variant = self._custom_loader_variant(query_data)
+            index = options.index((DataSource.CUSTOM_DATASET_LOADER, variant))
         else:
-            index = options.index((DataSource.BUNDLED, None))
+            index = options.index((DataSource.BUNDLED, variant))
 
         source, variant = st.radio(
             "data-source",
@@ -171,12 +173,13 @@ class DataWidget:
     def _handle_custom_loader(self, variant: int) -> tuple[pd.DataFrame, dict[str, str], bytes | None]:
         loader = self.custom_dataset_loader[variant]
 
-        if variant == 0:
-            params = QueryParams.get().data
-            if not isinstance(params, bytes):
-                params = None
+        params = QueryParams.get().data
+        prefix = self._custom_loader_prefix(variant)
+        if isinstance(params, bytes):
+            params = params.removeprefix(prefix) or None  # Don't pass empty params.
         else:
             params = None
+
         result = loader.load(params)
 
         def error_msg() -> str:
@@ -190,32 +193,20 @@ class DataWidget:
                 raise TypeError(error_msg())
             df, aggregations, params = result
 
-            if params and variant > 0:
-                with st.container(border=True):
-                    st.warning("Params are only supported for the primary loader.", icon="⚠️")
-                    st.text("The parameters")
-                    st.code(params)
-                    st.text("returned by")
-                    st.code(loader)
-                    st.text("will be ignored.")
-
-                params = None
-
-            elif not isinstance(params, bytes):
+            if not isinstance(params, bytes):
                 raise TypeError(error_msg())
-
             if not isinstance(aggregations, dict):
                 raise TypeError(error_msg())
 
         else:
             df = result
             aggregations = {}
-            params = None
+            params = bytes()
 
         if not isinstance(df, pd.DataFrame):
             raise TypeError(error_msg())
 
-        return df, aggregations, params
+        return df, aggregations, prefix + params
 
     @classmethod
     def show_data_overview(cls, df: pd.DataFrame) -> pd.DataFrame:
@@ -423,3 +414,19 @@ class DataWidget:
             width="stretch",
             selection_mode="single-column",
         )
+
+    def _custom_loader_prefix(self, variant: int) -> bytes:
+        loader = self.custom_dataset_loader[variant]
+
+        prefix = loader.get_prefix()
+        if prefix is None:
+            prefix = f"{type(loader).__name__}:{variant}:".encode()
+        return prefix
+
+    def _custom_loader_variant(self, params: bytes) -> int:
+        for variant, loader in enumerate(self.custom_dataset_loader):
+            prefix = self._custom_loader_prefix(variant)
+            if params.startswith(prefix):
+                LOGGER.debug("Selected loader[variant=%i]=%r based on prefix=%r.", variant, loader, prefix)
+                return variant
+        return 0
