@@ -2,11 +2,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import perf_counter
+from collections.abc import Callable
 
 import pandas as pd
 import streamlit as st
 import streamlit.config as stc
 from rics.strings import format_bytes, format_seconds
+
 from ._data_loader_widget import DataLoaderWidget
 from time_split_app.datasets import get_pandas_read_function, COMPRESSION_SUFFIXES, FILE_SUFFIXES
 from ..types import DataSource, QueryParams
@@ -16,6 +18,7 @@ from ._datasets import DatasetWidget
 from ._sample_data import SampleDataWidget
 from ._loader_from_env_entrypoint import from_env_entrypoint
 from .load import error_on_unaggregated_data, make_formatter
+from ...formatting import select_cmap, select_formatters
 
 
 def _get_upload_limit() -> int:
@@ -250,11 +253,42 @@ class DataWidget:
 
         return details
 
-    def show_data(self, df: pd.DataFrame) -> None:
+    def show_data_and_overview(self, df: pd.DataFrame) -> None:
+        left, right = st.columns([20, 3])
+
+        with right:
+            st.subheader("Table style", divider=True)
+
+            with st.popover("Show Overview", icon="📈", width="stretch"):
+                self.show_data_overview(df)
+
+            cmap = select_cmap("DataWidget")
+            formatters = select_formatters("DataWidget", df.dtypes)
+
+        def style_fn(df: pd.DataFrame) -> "pd.io.formats.style.Styler":
+            styler = df.style
+
+            styler = styler.format(formatters)
+
+            if cmap:
+                styler = styler.background_gradient(cmap)
+
+            return styler
+
+        with left:
+            self.show_data(df, style_fn)
+
+    def show_data(
+        self,
+        df: pd.DataFrame,
+        style_fn: Callable[[pd.DataFrame], "pd.io.formats.style.Styler | pd.DataFrame"] | None = None,
+    ) -> None:
         st.subheader("Data", divider="rainbow")
 
         df, info = self._head(df)
-        st.dataframe(df.reset_index(), hide_index=False, width="stretch")
+        if style_fn:
+            df = style_fn(df)
+        st.dataframe(df, hide_index=False, width="stretch")
         st.caption(info)
 
     def plot_data(self, df: pd.DataFrame) -> None:

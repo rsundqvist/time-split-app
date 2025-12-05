@@ -5,7 +5,6 @@ from typing import Collection
 
 import pandas as pd
 import streamlit as st
-from matplotlib import colormaps
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from rics.strings import format_seconds
@@ -15,6 +14,7 @@ from time_split.types import DatetimeIndexSplitterKwargs
 
 from time_split_app import config
 from time_split_app._logging import log_perf
+from time_split_app.formatting import select_cmap, select_formatters
 
 
 class AggregationWidget:
@@ -55,6 +55,7 @@ class AggregationWidget:
             agg = self.aggregate(df, split_kwargs=split_kwargs, aggregations=aggregations)
 
             if config.PLOT_AGGREGATIONS_PER_FOLD:
+                st.subheader("Plot", divider="rainbow")
                 self._plot(agg, aggregations | reserved)
             else:
                 st.warning(f"{config.PLOT_AGGREGATIONS_PER_FOLD=}", icon="⚠️")
@@ -80,11 +81,14 @@ class AggregationWidget:
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures = [executor.submit(plot, column) for column in columns]
 
+        tabs = st.tabs([c for c in columns])
+
         for (i, column), future in zip(enumerate(columns), futures, strict=True):
             pbar.progress(p, f"Plotting column `{i + 1}/{len(columns)}`: `{column!r}`")
 
             fig = future.result()
-            st.pyplot(fig, clear_figure=True, dpi=config.FIGURE_DPI)
+            with tabs[i]:
+                st.pyplot(fig, clear_figure=True, dpi=config.FIGURE_DPI)
 
             p += 1 / len(columns)
             pbar.progress(p)
@@ -193,21 +197,14 @@ class AggregationWidget:
     @classmethod
     def _format_table(cls, df: pd.DataFrame) -> "pd.io.formats.style.Styler":
         datasets = df.index.get_level_values("dataset").unique()
-        columns = df.columns
 
-        with st.popover("Format", width="stretch", icon="✏️"):
-            formatters = {}
-            for column in columns:
-                if column == "n_rows":
-                    fmt = "{:.0f}"
-                else:
-                    default = "{:.2f}"
-                    fmt = st.text_input(f"Select `{column!r}` format.", default)
-                    if not fmt:
-                        fmt = "{}"
+        column_formats = select_formatters("AggregationWidget", df.dtypes)
+        column_formats["n_rows"] = "{:.0f}"
 
-                for dataset in datasets:
-                    formatters[(column, dataset)] = fmt
+        formatters = {}
+        for column, fmt in column_formats.items():
+            for dataset in datasets:
+                formatters[(column, dataset)] = fmt
 
         df = df.unstack(level="dataset")
         if st.toggle("Pretty folds", value=True, help="Uncheck to display timestamps."):
@@ -227,15 +224,7 @@ class AggregationWidget:
         styler = df.style
         styler = styler.format(formatters)
 
-        disabled = "🚫 Disabled"
-        options = [disabled] + sorted(colormaps)
-        cmap = st.selectbox(
-            "Colormap",
-            options,
-            options.index("PuBu"),
-            help="Matplotlib [colormap](https://matplotlib.org/stable/users/explain/colors/colormaps.html) to use.",
-        )
-        if cmap != disabled:
+        if cmap := select_cmap("AggregationWidget"):
             styler = styler.background_gradient(cmap)
 
         return styler

@@ -71,12 +71,12 @@ def verify_frames(runner: AppTest) -> None:
                 ("Future data", "n_rows"),
             ],
         ),
-        (1000, ["timestamp", "column 0", "column 1", "column 2"]),
+        (1000, ["column 0", "column 1", "column 2"]),
+        (3, ["dtype", "memory", "nan", "min", "mean", "max", "sum"]),
         (2, ["FIGURE_DPI", "PLOT_RAW_TIMESERIES", "PLOT_AGGREGATIONS_PER_FOLD", "MAX_SPLITS"]),
         (1, ["Rows", "Cols", "Start", "Span", "End"]),
         (2, ["Index", "Original", "Change", "Expanded"]),
     ]
-
     actual_expansion = runner.dataframe[-1].value.to_string()
     assert actual_expansion == EXPECTED_EXPANSION.strip("\n")
 

@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support params for multiple custom loaders.
 - Method `DataLoaderWidget.get_prefix()` (default returns `None` = automatic prefix).
+- Add `"🔍 Show raw data"` gradient highlighting, formatting, and data summary widgets.
+
+### Changed
+- Render `📈 Aggregations per fold` figures in tabs.
 
 ## [2.1.2] - 2025-12-06
 

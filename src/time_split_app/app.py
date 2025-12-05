@@ -88,9 +88,11 @@ with st.sidebar:
 with data_tab:
     if data_source == DataSource.GENERATE:
         st.info("This is generated data. Use the `⚙️ Configure data` view to select a dataset.", icon="ℹ️")
-    DATA_WIDGET.show_data(df)
+
+    DATA_WIDGET.show_data_and_overview(df)
 
     if config.PLOT_RAW_TIMESERIES:
+        st.subheader("Plot", divider="rainbow")
         DATA_WIDGET.plot_data(df)
     else:
         st.warning(f"{config.PLOT_RAW_TIMESERIES=}", icon="⚠️")
