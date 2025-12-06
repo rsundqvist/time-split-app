@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Sanity check `DataLoaderWidget.get_prefix()` on startup.
+- Log and display warnings when params do not contain expected prefixes.
+- Discard params to do not contain the expected prefix for the chosen loader.
+
 ## [2.2.0] - 2025-12-06
 
 ### Added

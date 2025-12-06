@@ -8,7 +8,33 @@ from time_split_app import config
 
 @st.cache_resource
 def from_env_entrypoint() -> list[DataLoaderWidget]:
-    return [_from_user_spec(value) for value in config.DATASET_LOADER if value]
+    loaders = []
+    for value in config.DATASET_LOADER:
+        if not value:
+            continue
+
+        loader = _from_user_spec(value)
+        _sanity_check(loader)
+        loaders.append(loader)
+        break
+
+    return loaders
+
+
+def _sanity_check(loader: DataLoaderWidget) -> None:
+    first = loader.get_prefix()
+    second = loader.get_prefix()
+
+    if first != second:
+        msg = f"Bad {loader.get_prefix.__qualname__}(): Prefixes {first=} and {second=} do not match."
+        raise RuntimeError(msg)
+
+    if first is None:
+        return
+
+    if len(first) == 0:
+        msg = f"Bad {loader.get_prefix.__qualname__}(): Prefix {first!r} is empty; return None instead."
+        raise RuntimeError(msg)
 
 
 def _from_user_spec(value: str) -> DataLoaderWidget:

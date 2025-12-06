@@ -1,3 +1,4 @@
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -82,7 +83,7 @@ class DataWidget:
         elif isinstance(query_data, tuple):
             index = options.index((DataSource.GENERATE, variant))
         elif isinstance(query_data, bytes):
-            variant = self._custom_loader_variant(query_data)
+            variant = self._resolve_custom_loader_variant(query_data)
             index = options.index((DataSource.CUSTOM_DATASET_LOADER, variant))
         else:
             index = options.index((DataSource.BUNDLED, variant))
@@ -179,7 +180,13 @@ class DataWidget:
         params = QueryParams.get().data
         prefix = self._custom_loader_prefix(variant)
         if isinstance(params, bytes):
-            params = params.removeprefix(prefix) or None  # Don't pass empty params.
+            if params.startswith(prefix):
+                params = params.removeprefix(prefix)
+                if not params:
+                    params = None  # Don't pass empty params.
+            else:
+                LOGGER.warning(f"Params do not match {prefix=} for {loader=}; parameters will be discarded.")
+                params = None
         else:
             params = None
 
@@ -219,7 +226,7 @@ class DataWidget:
         st.subheader("Overview", divider="rainbow")
 
         frames = [
-            df.dtypes.rename("dtype"),
+            df.dtypes.rename("dtype").astype("str"),
             df.memory_usage(index=False, deep=True).rename("memory").map(format_bytes),
             df.isna().mean().map("{:.2%}".format).rename("nan"),
             df.min().rename("min"),
@@ -457,10 +464,24 @@ class DataWidget:
             prefix = f"{type(loader).__name__}:{variant}:".encode()
         return prefix
 
-    def _custom_loader_variant(self, params: bytes) -> int:
+    def _resolve_custom_loader_variant(self, params: bytes) -> int:
         for variant, loader in enumerate(self.custom_dataset_loader):
             prefix = self._custom_loader_prefix(variant)
             if params.startswith(prefix):
-                LOGGER.debug("Selected loader[variant=%i]=%r based on prefix=%r.", variant, loader, prefix)
+                extra = {"loader": type(loader).__name__, "variant": variant, "prefix": prefix}
+                LOGGER.info("Selected loader[variant=%i]=%r based on prefix=%r.", variant, loader, prefix, extra=extra)
                 return variant
+
+        parts = [
+            "Received data param bytes that do not contain any known prefixes.",
+            f" - {params=}",
+        ]
+        for variant, loader in enumerate(self.custom_dataset_loader):
+            parts.append(f" {variant}. {self._custom_loader_prefix(variant)!r} = {loader}")
+        msg = "\n".join(parts)
+
+        st.toast(parts[0], icon="⚠️")
+        LOGGER.warning(parts[0])
+        warnings.warn(msg, stacklevel=4)
+
         return 0
