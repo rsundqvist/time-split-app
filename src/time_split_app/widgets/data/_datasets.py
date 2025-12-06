@@ -9,7 +9,7 @@ from rics.strings import format_seconds
 from time_split_app.datasets import Dataset, DatasetConfig, load_dataset
 
 from time_split_app import config
-from time_split_app._logging import log_perf
+from time_split_app._logging import log_perf, LOGGER
 from time_split_app.widgets.types import QueryParams
 
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx, ScriptRunContext
@@ -18,6 +18,10 @@ from time_split_app.datasets import load_dataset_configs as load_dataset_configs
 
 class DatasetWidget:
     """Prepackaged datasets."""
+
+    def __init__(self) -> None:
+        self._sizes: dict[str, int] = {}
+        self._digest = b""
 
     def select(self) -> tuple[pd.DataFrame, dict[str, str], str]:
         """Let the user select an included dataset."""
@@ -59,8 +63,7 @@ class DatasetWidget:
 
         return dataset.df, dataset.aggregations, dataset.label
 
-    @staticmethod
-    def load_datasets() -> list[Dataset]:
+    def load_datasets(self) -> list[Dataset]:
         """Load configured datasets."""
         configs, configs_loaded, digest = load_dataset_configs()
 
@@ -69,6 +72,13 @@ class DatasetWidget:
         else:
             datasets_loaded = None
             datasets = []
+        LOGGER.debug("Dataset load times: configs=%r, datasets=%r", configs_loaded, datasets_loaded)
+
+        sizes = {ds.label: len(ds.df) for ds in datasets}
+        if self._sizes != sizes or self._digest != digest:
+            LOGGER.info(f"Loaded {len(sizes)} datasets with {sizes=} and config {digest=}.")
+            self._digest = digest
+            self._sizes = sizes
 
         if config.DEBUG:
             rows = [
