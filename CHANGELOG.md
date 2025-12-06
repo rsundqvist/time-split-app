@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.2] - 2025-12-06
+
 ### Fixed
 - Fix loading of local `datasets.toml`-files without `fsspec`.
 
@@ -113,7 +115,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.1.2...HEAD
+[2.1.2]: https://github.com/rsundqvist/time-split-app/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/rsundqvist/time-split-app/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/rsundqvist/time-split-app/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/rsundqvist/time-split-app/compare/v1.1.0...v2.0.0
