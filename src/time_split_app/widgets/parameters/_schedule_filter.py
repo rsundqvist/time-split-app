@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from typing import Literal
+
 import streamlit as st
 
 from time_split_app.widgets.types import Filters, QueryParams
@@ -11,14 +13,24 @@ class ScheduleFilterWidget:
     step: int = 99
     """Set the maximum fold step. Zero=no limit."""
 
-    def select(self) -> Filters:
+    def select(
+        self,
+        *,
+        limit: int | Literal["min"] | None = None,
+        step: int | Literal["min"] | None = None,
+    ) -> Filters:
         """Get filtering parameters."""
 
         qp = QueryParams.get()
 
+        if limit is None:
+            limit = "min" if qp.n_splits is None else qp.n_splits
+        if step is None:
+            step = "min" if qp.step is None else qp.step
+
         limit = st.number_input(
             ":no_entry: Maximum fold count.",
-            value="min" if qp.n_splits is None else qp.n_splits,
+            value=limit,
             min_value=0,
             max_value=self.limit or None,
             help="Keep at most *N* folds. Zero = no limit. Later folds are preferred.",
@@ -27,7 +39,7 @@ class ScheduleFilterWidget:
 
         step = st.number_input(
             "🪜 Fold step size.",
-            value="min" if qp.step is None else qp.step,
+            value=step,
             min_value=1,
             max_value=self.step or None,
             help="Keep every *N* folds. Later folds are preferred.",
