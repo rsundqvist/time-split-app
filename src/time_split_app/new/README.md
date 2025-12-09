@@ -2,7 +2,7 @@
 This is a naive template for building and running the [time-split](https://time-split.readthedocs.io/) application as a
 Docker container. See the [extensions file](my_extensions.py) for customizations.
 
-To start the app for development, use the [dev script](start-dev.sh):
+To start the app for development, use the [dev script](time_split_app/new/start-dev.sh):
 
 ```bash
 ./start-dev.sh
@@ -18,11 +18,11 @@ to show config options. Options are specified using environment variables.
 # Docker
 To build and start the application using Docker, run:
 ```bash
-image=custom-time-split-app
+image=dev/time-split-app
 docker build -t $image .
-docker run --rm --name=dev/time-split -p 8501:8501 $image
+docker run --rm --name=time-split-app -p 8501:8501 $image
 ```
-in the terminal. See the [Dockerfile](Dockerfile) for details.
+in the terminal. See the [Dockerfile](time_split_app/new/Dockerfile) for details.
 
 # Resources
 * See the [extensions module](https://github.com/rsundqvist/time-split-app/blob/master/app_extensions.py) of the public

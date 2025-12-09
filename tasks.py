@@ -12,11 +12,13 @@ from invoke.runners import Result
 
 ROOT_DIR = Path(__file__).parent
 SOURCE_DIR = ROOT_DIR.joinpath("src/time_split_app")
+NEW_DIR = ROOT_DIR / "new"
 TEST_DIR = ROOT_DIR.joinpath("tests")
 PYTHON_TARGETS = [
     ROOT_DIR / "app.py",
     ROOT_DIR / "dev/update-datasets.py",
     SOURCE_DIR,
+    # NEW_DIR,
     TEST_DIR,
     Path(__file__),
 ]

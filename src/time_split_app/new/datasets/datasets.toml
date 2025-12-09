@@ -1,0 +1,8 @@
+[my-dataset]
+label = "My dataset"
+description = """This is the summary.
+
+The description supports `Markdown` syntax.
+"""
+path = "datasets/covid19.csv"
+index = "date"

@@ -59,7 +59,20 @@ def start(port: int) -> None:
 )
 def new(out: str) -> None:
     """Create app from template."""
-    files = ["Dockerfile", "entrypoint.sh", "my_extensions.py", "README.md", "start-dev.sh"]
+    files = [
+        "Dockerfile",
+        "README.md",
+        "datasets/covid19.csv",
+        "datasets/datasets.toml",
+        "entrypoint.sh",
+        "extensions.env",
+        "extensions/__init__.py",
+        "extensions/my_dataset_loader.py",
+        "extensions/my_kwargs_type.py",
+        "extensions/my_plot_fn.py",
+        "extensions/my_select_fn.py",
+        "start-dev.sh",
+    ]
 
     root = Path(out)
     root.mkdir(exist_ok=False, parents=True)
@@ -67,6 +80,8 @@ def new(out: str) -> None:
     for f in files:
         src = Path(__file__).parent.joinpath("new", f)
         dst = root.joinpath(f)
+
+        dst.parent.mkdir(exist_ok=True)
 
         dst.write_bytes(src.read_bytes())
         dst.chmod(src.stat().st_mode | stat.S_IWUSR)
