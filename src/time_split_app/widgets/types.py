@@ -114,6 +114,7 @@ class QueryParams:
     before: str | None = None
     after: str | None = None
     expand_limits: bool | str | None = None
+    filter: str | None = None  # For extensions; not supported by the app itself.
 
     show_removed: bool | None = None
     data: int | str | bytes | tuple[datetime, datetime] | None = None
@@ -176,6 +177,33 @@ class QueryParams:
             return dt.replace(minute=0, second=0, microsecond=0) + delta
 
         return _convert(start), _convert(end)
+
+    def get_splitter_kwargs(self) -> DatetimeIndexSplitterKwargs:
+        """Get split kwargs from query.
+
+        Returns:
+            A :class:`.DatetimeIndexSplitterKwargs` from query.
+
+        Raises:
+            ValueError: If :class:`.DatetimeIndexSplitterKwargs` cannot be constructed from the current query.
+        """
+
+        if self.schedule is None:
+            msg = f"Cannot construct valid {DatetimeIndexSplitterKwargs.__name__} from the current query."
+            raise ValueError(msg)
+
+        retval = DatetimeIndexSplitterKwargs(
+            schedule=self.schedule,
+        )
+
+        for name in DatetimeIndexSplitterKwargs.__annotations__:
+            value = getattr(self, name)
+            if value is None:
+                continue
+            # https://github.com/python/typing/discussions/1412
+            retval[name] = value  # type: ignore[literal-required]
+
+        return retval
 
     @classmethod
     def get(cls) -> Self:
