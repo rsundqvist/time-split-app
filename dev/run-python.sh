@@ -3,7 +3,7 @@
 set -eux
 
 set -a
-source "$(dirname "$0")/.env"
+source "$(dirname "$0")/common.env"
 export DATASETS_CONFIG_PATH="dev/data/local-datasets.toml"
 set +a
 

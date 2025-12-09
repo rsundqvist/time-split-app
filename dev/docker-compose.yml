@@ -5,7 +5,7 @@ services:
     image: time-split:dev
     ports:
       - "8501:8501"
-    env_file: ./.env
+    env_file: ./common.env
     environment:
       DEBUG: false
       EXTRA_PIP_PACKAGES: s3fs

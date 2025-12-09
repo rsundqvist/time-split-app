@@ -10,7 +10,7 @@ dir=$(dirname "$0")
 docker run \
   --rm \
   --network=host \
-  --env-file "$dir/.env" \
+  --env-file "$dir/common.env" \
   --env EXTRA_PIP_PACKAGES="s3fs mplcyberpunk" \
   --env REQUIRE_DATASETS=true \
   --env DATASETS_CONFIG_PATH="s3://my-bucket/data/remote-datasets.toml" \
