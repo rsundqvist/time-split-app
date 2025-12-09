@@ -55,8 +55,10 @@ CONFIGURE_PLOTTING = _env.read_bool("CONFIGURE_PLOTTING", True)
 """Set to ``False`` to disable the default plotting style setup."""
 CONFIGURE_LOGGING = _env.read_bool("CONFIGURE_LOGGING", True)
 """Set to ``False`` to disable the default logging setup."""
-PERFORMANCE_LOG_LEVEL: int = _env.read_int("PERFORMANCE_LOG_LEVEL", 20)
-"""Level for the `time_split_app.performance` logger. Default is ``logging.INFO=20``."""
+LOG_LEVEL: int = _env.read_int("LOG_LEVEL", 20)
+"""Level for the `time_split_app` logger. Default is ``logging.INFO=20``."""
+PERFORMANCE_LOG_LEVEL: int = _env.read_int("PERFORMANCE_LOG_LEVEL", 10)
+"""Log level for most messages emitted by the `time_split_app.performance` logger. Default is ``logging.DEBUG=10``."""
 
 DATE_ONLY: bool = _env.read_bool("DATE_ONLY", True)
 """If ``True``, lock set the app in `date_only` mode wherever possible."""

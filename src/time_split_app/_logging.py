@@ -11,6 +11,7 @@ from time_split_app import config
 from time_split_app.widgets.types import QueryParams
 
 LOGGER = logging.getLogger("time_split_app")
+_PERFORMANCE_LOGGER = LOGGER.getChild("performance")
 
 
 def log_perf(
@@ -19,7 +20,7 @@ def log_perf(
     seconds: float,
     *,
     extra: dict[str, Any],
-    level: int = logging.DEBUG,
+    level: int = config.PERFORMANCE_LOG_LEVEL,
 ) -> str:
     if isinstance(df, dict):
         frames: dict[str, Any] = {key: _get_frame_extras(df) for key, df in df.items()}
@@ -40,7 +41,7 @@ def log_perf(
         **QueryParams.get().to_dict(prefix="query."),
     }
     message = message.format_map(extra)
-    LOGGER.log(level, message.replace("`", "") + f" | {extra=}", extra=extra)
+    _PERFORMANCE_LOGGER.log(level, message.replace("`", "") + f" | {extra=}", extra=extra)
     return message
 
 
@@ -82,4 +83,4 @@ def _get_session_data(session_id: str) -> str:
 
 def configure_logging() -> None:
     basic_config(force=False)
-    LOGGER.setLevel(config.PERFORMANCE_LOG_LEVEL)
+    LOGGER.setLevel(config.LOG_LEVEL)

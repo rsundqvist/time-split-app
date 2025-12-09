@@ -72,7 +72,7 @@ class DatasetWidget:
         else:
             datasets_loaded = None
             datasets = []
-        LOGGER.debug("Dataset load times: configs=%r, datasets=%r", configs_loaded, datasets_loaded)
+        LOGGER.debug("Dataset load timestamp: configs=%r, datasets=%r", configs_loaded, datasets_loaded)
 
         sizes = {ds.label: len(ds.df) for ds in datasets}
         if self._sizes != sizes or self._digest != digest:
@@ -108,11 +108,10 @@ def load_dataset_configs() -> tuple[tuple[DatasetConfig, ...] | None, datetime, 
     now = datetime.now(UTC)
 
     path = config.DATASETS_CONFIG_PATH
+    LOGGER.debug("Loading datasets from path=%r", path, extra={"path": path})
     try:
         digest, configs = load_dataset_configs_from_path(path, return_digest=True)
     except Exception as e:
-        from time_split_app._logging import LOGGER
-
         if config.REQUIRE_DATASETS:
             from os import _exit as force_exit
 
@@ -122,6 +121,9 @@ def load_dataset_configs() -> tuple[tuple[DatasetConfig, ...] | None, datetime, 
         LOGGER.warning(f"Failed to read dataset config {path=}: {e!r}. No datasets will be loaded.", exc_info=False)
         return None, now, b""
 
+    sha256 = f"0x{digest.hex()}"
+    extra = {"sha256": sha256, "path": path, "count": len(configs)}
+    LOGGER.info(f"Loaded {len(configs)} configs from {path=} with digest (sha256)={sha256}.", extra=extra)
     return (*configs,), now, digest
 
 
