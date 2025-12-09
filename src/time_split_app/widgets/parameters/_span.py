@@ -1,8 +1,10 @@
 from ast import literal_eval
 from typing import Literal
 
+import pandas as pd
 import streamlit as st
 
+from time_split_app import config
 from time_split_app.widgets.types import SpanType, QueryParams
 from time_split.types import Span
 
@@ -36,7 +38,7 @@ class SpanWidget:
         is_before = span == "before"
         query_span = qp.before if is_before else qp.after
 
-        kinds = []
+        kinds: list[SpanType] = []
         if step:
             kinds.append(SpanType.STEP)
         if duration:
@@ -66,14 +68,24 @@ class SpanWidget:
 
         qp = QueryParams.get()
         query_span = qp.before if self._is_before else qp.after
+
+        radio_key = f"{type(self).__name__}-{label}-span-radio"
+
+        kind: SpanType
+        if radio_key not in st.session_state:
+            kind = default_kind
+
+            if query_span:
+                query_span_kind = self._span_kind(query_span)
+                if query_span_kind in kinds:
+                    kind = query_span_kind
+
+            st.session_state[radio_key] = kind
+
         prefix = ":arrow_left:" if self._is_before else ":arrow_right:"
 
         with st.container(key=f"tight-rows-{label}_span"):
-            kind: SpanType = st.radio(
-                f"{prefix} Span :primary[***{label}***] the fold date.",
-                kinds,
-                index=kinds.index(default_kind if query_span is None else SpanType.FREE_FORM),
-            )
+            kind = st.radio(f"{prefix} Span :primary[***{label}***] the fold date.", kinds, key=radio_key)
 
         if kind is SpanType.STEP:
             return st.number_input(label, min_value=1, max_value=self._step, label_visibility="collapsed")
@@ -82,24 +94,55 @@ class SpanWidget:
             with st.container(key=f"tight-rows-{label}_span_duration"):
                 from ..time import select_duration
 
-                return select_duration(label)
+                return select_duration(label, read_query_param=self.span)
 
-        defaults = {
-            SpanType.DURATION: "7 days",
-            SpanType.ALL: "all",
-            SpanType.FREE_FORM: "10 days 6 hours",
-        }
+        text_input_key = f"{type(self).__name__}-{label}-span-user-input"
+        if kind is SpanType.ALL:
+            text_input_key = text_input_key + "-all"
+            st.session_state[text_input_key] = "all"
+        else:
+            st.session_state.setdefault(text_input_key, "10 days 6 hours")
+
         user_input = st.text_input(
             label,
-            value=defaults[kind] if query_span is None else query_span,
             label_visibility="collapsed",
-            disabled=kind == SpanType.ALL,
+            disabled=kind != SpanType.FREE_FORM,
+            key=text_input_key,
         )
 
         if not user_input.strip():
             st.stop()
 
         return self._process_user_input(kind, user_input)
+
+    @classmethod
+    def _span_kind(cls, query_span: str) -> SpanType | None:
+        if query_span == "all":
+            return SpanType.ALL
+
+        try:
+            int(query_span)
+            return SpanType.STEP
+        except Exception:
+            pass
+
+        try:
+            timestamp = pd.Timedelta(query_span)  # Ensure valid time span
+
+            for unit in "d", "h", "m":
+                num = timestamp / pd.Timedelta(1, unit)
+                if num.is_integer():
+                    return SpanType.DURATION
+
+                if config.DATE_ONLY:
+                    # Valid time span but not for date-only. Assume free form.
+                    return SpanType.FREE_FORM
+
+            return SpanType.DURATION
+        except Exception:
+            pass
+
+        return SpanType.FREE_FORM
 
     def _process_user_input(self, kind: SpanType, user_input: str) -> Span:
         if kind == SpanType.ALL:

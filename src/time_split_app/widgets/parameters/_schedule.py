@@ -1,6 +1,6 @@
 import datetime
 from ast import literal_eval
-from typing import Callable, Collection, TypeVar
+from typing import Collection, TypeVar
 
 import pandas as pd
 import streamlit as st
@@ -36,7 +36,7 @@ class ScheduleWidget:
         if filter is None:
             filter = ScheduleFilterWidget()
 
-        kinds = []
+        kinds: list[ScheduleType] = []
         if cron:
             kinds.append(ScheduleType.CRON)
         if duration:
@@ -67,13 +67,19 @@ class ScheduleWidget:
         schedule: ProcessedSchedule
         left, right = st.columns(2)
         with left:
-            index = 0 if query_schedule is None else kinds.index(ScheduleType.FREE_FORM)
-            kind = st.radio("schedule-type", kinds, index=index, horizontal=True, label_visibility="collapsed")
+            if "schedule-type" not in st.session_state:
+                if query_schedule is None:
+                    st.session_state["schedule-type"] = kinds[0]
+                else:
+                    _, kind = self._process_user_input(query_schedule.strip(), kind=None)
+                    st.session_state["schedule-type"] = kind
+
+            kind = st.radio("schedule-type", kinds, horizontal=True, label_visibility="collapsed", key="schedule-type")
             assert kind is not None
 
             if kind == ScheduleType.DURATION:
                 with st.container(key="tight-rows-schedule_span"):
-                    schedule = select_duration("schedule")
+                    schedule = select_duration("schedule", read_query_param="schedule")
             else:
                 defaults = {
                     ScheduleType.CRON: "0 0 * * MON,FRI",
@@ -91,33 +97,33 @@ class ScheduleWidget:
                 if not user_input.strip():
                     st.stop()
 
-                schedule = self._process_user_input(kind, user_input)
+                schedule, _ = self._process_user_input(user_input, kind)
 
         with right:
             filters = self._filter.select()
 
         return schedule, filters
 
-    def _process_user_input(self, kind: ScheduleType, user_input: str) -> ProcessedSchedule:
+    def _process_user_input(self, user_input: str, kind: ScheduleType | None) -> tuple[ProcessedSchedule, ScheduleType]:
+        if kind is None:
+            for kind in self._kinds:
+                try:
+                    return self._process_user_input(user_input, kind)
+                except Exception:
+                    pass
+
         if kind is ScheduleType.CRON:
-            _validate(user_input, croniter.expand)
-            return user_input.strip()
+            cron = user_input.strip()
+            croniter.expand(cron)
+            return cron, kind
 
         if kind is ScheduleType.DURATION:
-            return _validate(user_input, _to_timedelta)
+            return _to_timedelta(user_input), kind
 
         if kind is ScheduleType.FREE_FORM:
-            return _validate(user_input, _validate_literal)
+            return _validate_literal(user_input), kind
 
         raise NotImplementedError(f"{kind=}")
-
-
-def _validate(value: str, validator: Callable[[str], R]) -> R:
-    try:
-        return validator(value)
-    except Exception as e:
-        st.exception(e)
-        st.stop()
 
 
 def _to_timedelta(s: str) -> datetime.timedelta:
