@@ -25,6 +25,7 @@ class DurationWidget:
         periods: dict[str, int],
     ) -> None:
         self._unit = default_unit
+        self._units = sorted(periods, key=lambda unit: pd.Timedelta(1, unit), reverse=True)
         self._periods = periods
 
     @classmethod
@@ -38,7 +39,7 @@ class DurationWidget:
         if date_only:
             default_unit = "days"
         else:
-            default_unit = "minutes"
+            default_unit = "hours"
             units.extend(("seconds", "minutes", "hours"))
 
         periods = {}
@@ -76,6 +77,7 @@ class DurationWidget:
         unit = self._unit
         periods = self._periods[unit]
         unit_label = f"select-{label}-unit"
+        previous_unit_label = unit_label + "-previous"
         periods_label = f"select-{label}-periods"
         if unit_label not in st.session_state or periods_label not in st.session_state:
             if read_query_param:
@@ -87,7 +89,26 @@ class DurationWidget:
             st.session_state[unit_label] = unit
             st.session_state[periods_label] = periods
 
+        with right:
+            unit = st.selectbox(
+                unit_label,
+                options=self._units,
+                label_visibility="collapsed",
+                disabled=len(self._units) == 1,
+                key=unit_label,
+            )
+            assert isinstance(unit, str)
+
+        if previous_unit := st.session_state.get(previous_unit_label):
+            if unit != previous_unit:
+                prev_periods = st.session_state[periods_label]
+                new_periods = pd.Timedelta(prev_periods, previous_unit) / pd.Timedelta(1, unit)
+                st.session_state[periods_label] = round(new_periods) or 1
+        st.session_state[previous_unit_label] = unit
+
         with left:
+            # Periods may be huge, would be nice to add separates. Not supported by
+            # https://github.com/alexei/sprintf.js/issues/124 though.
             periods = st.number_input(
                 periods_label,
                 min_value=1,
@@ -97,20 +118,7 @@ class DurationWidget:
             )
             assert isinstance(periods, int)
 
-        with right:
-            options = [*self._periods]
-            unit = st.selectbox(
-                unit_label,
-                options=options,
-                label_visibility="collapsed",
-                disabled=len(options) == 1,
-                key=unit_label,
-            )
-            assert isinstance(unit, str)
-
-        timedelta = pd.Timedelta(f"{periods} {unit}").to_pytimedelta()
-        assert isinstance(timedelta, datetime.timedelta)
-        return timedelta
+        return pd.Timedelta(periods, unit).to_pytimedelta()  # type: ignore[no-any-return]
 
     def _read_query_param(self, param: ReadQueryParam) -> tuple[int, str]:
         schedule = getattr(QueryParams.get(), param)
