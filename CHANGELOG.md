@@ -7,8 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* Added several new log messages related to datasets.
+* Added `PERFORMANCE_LOG_LEVEL` to control log level of most performance messages.
+
 ### Changed
-- Log dataset sizes and digest on changes.
+* Improvements to the `QueryParameters` class:
+  - Added `.get_splitter_kwargs() -> DatetimeIndexSplitterKwargs` method.
+  - Added `.filter` parameter (requires user extensions).
+  - Attempt to show correct widget type based (e.g. timedelta when `schedule='9 days'`).
+* All performance messages are now logged by the `time_split_app.performance` logger.
+
+### Fixed
+* The `DurationWidget` now properly converts between units (e.g. hours and minutes).
+* Fixed several issues where query parameters would overwrite user inputs on reload.
+* Fixed a number of documentation and other minor issues.
 
 ## [2.2.1] - 2025-12-06
 
