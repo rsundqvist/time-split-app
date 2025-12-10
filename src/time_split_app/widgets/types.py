@@ -20,7 +20,10 @@ from time_split.types import DatetimeIndexSplitterKwargs
 SelectSplitParams = Callable[[], DatetimeIndexSplitterKwargs]
 """A callable ``() -> DatetimeIndexSplitterKwargs``; see :func:`time_split.split`."""
 PlotFn = Callable[..., "Axes"]
-"""A callable that mimics interface of :func:`time_split.plot`."""
+"""A callable that mimics interface of :func:`time_split.plot`.
+
+The `available` data is always a :class:`pandas.DataFrame`.
+"""
 LinkFn = Callable[..., str]
 """A callable that mimics interface of :func:`time_split.app.create_explorer_link`."""
 
@@ -115,24 +118,25 @@ class QueryParams:
     show_removed: bool | None = None
     data: int | str | bytes | tuple[datetime, datetime] | None = None
     """Data selection.
-    
+
     Built-in data loaders:
         If an ``int`` or ``str``, it is assumed to refer to a :attr:`.DatasetConfig.label`, either by index or by the
         label itself. Labels are normalized using :meth:`normalize_dataset`.
-    
+
         May also be a tuple of UNIX timestamps, specified on the form ``<start>-<stop>``, e.g. ``1556668800-1557606600``
         for a range ``('2019-05-01T00:00:00z', '2019-05-11T20:30:00z')``. Tuples are converted using 
         :meth:`convert_timestamps`. Note that timestamps are coerced into 5-minute increments as naive UTC timestamps.
-        
+
         This is managed automatically when using the bundled functions.
-    
+
     Custom data loaders:
-        If ``bytes``, these are assumed by the the parameters of a custom :class:`.DataLoaderWidget`; the bytes will be
-        forwarded to the ``load()``-method of the implementation as-is.
-        
+        If ``bytes``, these are assumed by the the parameters of a custom :class:`.DataLoaderWidget`. A
+        :meth:`prefix <.DataLoaderWidget.get_prefix>` is prepended to the raw ``bytes`` object returned by
+        :meth:`.DataLoaderWidget.load`. The prefix is used to identify loader instances.
+
         The ``bytes`` data is round tripped (as a base 16 string prefixed by `0x`) when using permalinks; serialization,
         deserialization and validation of the actual content is the responsibility of the implementation.
-        
+
     See Also:
         The :func:`.create_explorer_link` function.
     """
@@ -166,7 +170,7 @@ class QueryParams:
         def _convert(ts: int) -> datetime:
             dt = datetime.fromtimestamp(ts, tz)
 
-            # Round to nearest multiple of 5 minutes = 300 seconds
+            # Round to the nearest multiple of 5 minutes = 300 seconds
             seconds = 60.0 * dt.minute + dt.second + dt.microsecond / 1000000.0
             delta = timedelta(seconds=round(seconds / 300.0) * 300.0)
             return dt.replace(minute=0, second=0, microsecond=0) + delta

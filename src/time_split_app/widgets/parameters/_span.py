@@ -69,12 +69,11 @@ class SpanWidget:
         prefix = ":arrow_left:" if self._is_before else ":arrow_right:"
 
         with st.container(key=f"tight-rows-{label}_span"):
-            kind: SpanType | None = st.radio(
+            kind: SpanType = st.radio(
                 f"{prefix} Span :primary[***{label}***] the fold date.",
                 kinds,
                 index=kinds.index(default_kind if query_span is None else SpanType.FREE_FORM),
             )
-        assert kind, "this shouldn't happen"
 
         if kind is SpanType.STEP:
             return st.number_input(label, min_value=1, max_value=self._step, label_visibility="collapsed")

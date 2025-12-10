@@ -51,8 +51,9 @@ def primary(
 
         with config_container:
             used, avail = fold_overview_widget.get_data_utilization(splits, limits)
+            frac = used / avail if avail else 0
             st.write(
-                f"*Using `{format_seconds(used)}` of `{format_seconds(avail)}` **({used / avail:.1%})** of the available data range.*"
+                f"*Using `{format_seconds(used)}` of `{format_seconds(avail)}` **({frac:.1%})** of the available data range.*"
             )
 
     with st.container(border=True):

@@ -30,6 +30,8 @@ class FoldOverviewWidget:
     @classmethod
     def get_data_utilization(cls, splits: DatetimeSplits, limits: tuple[pd.Timestamp, pd.Timestamp]) -> tuple[int, int]:
         available = limits[1] - limits[0]
+        if not splits:
+            return 0, 0
         used = max(*itertools.chain.from_iterable(splits)) - min(*itertools.chain.from_iterable(splits))
         return int(used.total_seconds()), int(available.total_seconds())
 

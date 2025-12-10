@@ -60,6 +60,8 @@ class ExpandLimitsWidget:
         if limits == expanded_limits:
             if spec:
                 st.info("Limits were not expanded.", icon="ℹ️")
+            else:
+                st.caption("Limits expansion disabled.")
             return
 
         data = {

@@ -23,7 +23,7 @@ class SplitterKwargsWidget:
         after_widget = self.after_widget
         if after_widget.span != "after":
             msg = f"Bad {after_widget=}; should have span='after'."
-            raise ValueError()
+            raise ValueError(msg)
 
     def select_params(self) -> DatetimeIndexSplitterKwargs:
         schedule, filters = self.schedule_widget.get_schedule()

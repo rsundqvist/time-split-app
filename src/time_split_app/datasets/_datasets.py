@@ -28,5 +28,9 @@ def load_dataset(config: DatasetConfig) -> Dataset:
     Returns:
         A :class:`Dataset` instance.
     """
-    df = dataframe_from_path(config.path, config.index, **config.read_function_kwargs)
+    try:
+        df = dataframe_from_path(config.path, config.index, **config.read_function_kwargs)
+    except Exception as e:
+        e.add_note(f"{config=}")
+        raise
     return Dataset(df=df, **asdict(config))

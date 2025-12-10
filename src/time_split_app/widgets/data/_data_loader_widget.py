@@ -31,9 +31,10 @@ class DataLoaderWidget(abc.ABC):
         """Brief description shown in the `⚙️ Configure data` menu. Uses Markdown syntax."""
 
     def get_prefix(self) -> bytes | None:
-        """Return a loader prefix.
+        """Return a loader prefix. Generated automatically if ``None``.
 
-        Used to identify the loader when multiple custom loaders are used. Generated automatically if ``None``."""
+        Used to identify the loader when :attr:`.QueryParams.data` is round-tripped.
+        """
         return None
 
     @abc.abstractmethod

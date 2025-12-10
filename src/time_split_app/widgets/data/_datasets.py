@@ -76,7 +76,9 @@ class DatasetWidget:
 
         sizes = {ds.label: len(ds.df) for ds in datasets}
         if self._sizes != sizes or self._digest != digest:
-            LOGGER.info(f"Loaded {len(sizes)} datasets with {sizes=} and config {digest=}.")
+            sha256 = f"0x{digest.hex()}"
+            extra = {"sha256": sha256, "sizes": sizes}
+            LOGGER.info(f"Loaded {len(sizes)} datasets with {sizes=} and config digest (sha256)={sha256}.", extra=extra)
             self._digest = digest
             self._sizes = sizes
 
