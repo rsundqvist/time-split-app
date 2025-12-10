@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2025-12-10
+
 ### Added
 * Added several new log messages related to datasets.
 * Added `PERFORMANCE_LOG_LEVEL` to control log level of most performance messages.
@@ -148,7 +150,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/rsundqvist/time-split-app/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/rsundqvist/time-split-app/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/rsundqvist/time-split-app/compare/v2.1.2...v2.2.0
 [2.1.2]: https://github.com/rsundqvist/time-split-app/compare/v2.1.1...v2.1.2
