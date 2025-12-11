@@ -16,7 +16,6 @@ def from_env_entrypoint() -> list[DataLoaderWidget]:
         loader = _from_user_spec(value)
         _sanity_check(loader)
         loaders.append(loader)
-        break
 
     return loaders
 

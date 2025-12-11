@@ -108,6 +108,9 @@ def load_dataset_configs() -> tuple[tuple[DatasetConfig, ...] | None, datetime, 
     now = datetime.now(UTC)
 
     path = config.DATASETS_CONFIG_PATH
+    if not path:
+        return None, now, b""
+
     LOGGER.debug("Loading datasets from path=%r", path, extra={"path": path})
     try:
         digest, configs = load_dataset_configs_from_path(path, return_digest=True)
@@ -118,7 +121,19 @@ def load_dataset_configs() -> tuple[tuple[DatasetConfig, ...] | None, datetime, 
             LOGGER.exception(f"Failed to load dataset config {path=}. Refusing to start since REQUIRE_DATASETS=True.")
             force_exit(52)  # regular exit will not halt the underlying server.
 
-        LOGGER.warning(f"Failed to read dataset config {path=}: {e!r}. No datasets will be loaded.", exc_info=False)
+        if isinstance(e, FileNotFoundError):
+            LOGGER.info(
+                f"Datasets file DATASETS_CONFIG_PATH={path} does not exist. No datasets will be loaded.",
+                extra={"path": path},
+            )
+            config.DATASETS_CONFIG_PATH = ""
+        else:
+            LOGGER.warning(
+                f"Failed to read dataset config {path=}: {e!r}.",
+                exc_info=True,
+                extra={"path": path},
+            )
+
         return None, now, b""
 
     sha256 = f"0x{digest.hex()}"

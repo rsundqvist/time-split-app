@@ -192,21 +192,17 @@ class DataWidget:
 
         result = loader.load(params)
 
-        def error_msg() -> str:
+        def error_msg(reason: str) -> str:
             return (
-                f"Bad implementation {type(loader).__qualname__}: "
-                f"Must return either a tuple `(df, aggregations, params)` or just `DataFrame`. Got: {result}."
+                f"Bad implementation {type(loader).__qualname__}: {reason}\n"
+                f"Must return either a tuple `(df, aggregations, params)` or just `DataFrame`. Got:\n{result}."
             )
 
         if isinstance(result, tuple):
             if len(result) != 3:
-                raise TypeError(error_msg())
+                msg = error_msg(f"for type(result)=type, len(result) = {len(result)} != 3")
+                raise TypeError(msg)
             df, aggregations, params = result
-
-            if not isinstance(params, bytes):
-                raise TypeError(error_msg())
-            if not isinstance(aggregations, dict):
-                raise TypeError(error_msg())
 
         else:
             df = result
@@ -214,7 +210,16 @@ class DataWidget:
             params = bytes()
 
         if not isinstance(df, pd.DataFrame):
-            raise TypeError(error_msg())
+            msg = error_msg(f"type(df) = {type(df).__name__} != pandas.DataFrame")
+            raise TypeError(msg)
+
+        if not isinstance(aggregations, dict):
+            msg = error_msg(f"type(aggregations) = {type(params).__name__} != aggregations")
+            raise TypeError(msg)
+
+        if not isinstance(params, bytes):
+            msg = error_msg(f"type(params) = {type(params).__name__} != bytes")
+            raise TypeError(msg)
 
         return df, aggregations, prefix + params
 
