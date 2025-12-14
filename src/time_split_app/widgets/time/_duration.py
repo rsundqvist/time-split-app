@@ -123,7 +123,7 @@ class DurationWidget:
     def _read_query_param(self, param: ReadQueryParam) -> tuple[int, str]:
         schedule = getattr(QueryParams.get(), param)
         for unit in self._periods:
-            if unit in schedule:
+            if unit.removesuffix("s") in schedule:
                 timedelta = pd.Timedelta(schedule)
                 periods = int(timedelta / pd.Timedelta(1, unit=unit))
                 # Check for float.is_integer() assumed to be done before this widget type is selected.
