@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.2] - 2025-12-14
+
 ### Fixed
 * Fix single-period period spans in the query (e.g. `before='1 day'`).
 
@@ -159,7 +161,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.3.1...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.3.2...HEAD
+[2.3.2]: https://github.com/rsundqvist/time-split-app/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/rsundqvist/time-split-app/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/rsundqvist/time-split-app/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/rsundqvist/time-split-app/compare/v2.2.0...v2.2.1
