@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* Add `after/after='empty'` support to span widget.
+
 ## [2.3.2] - 2025-12-14
 
 ### Fixed

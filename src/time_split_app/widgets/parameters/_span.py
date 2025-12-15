@@ -7,6 +7,7 @@ import streamlit as st
 from time_split_app import config
 from time_split_app.widgets.types import SpanType, QueryParams
 from time_split.types import Span
+from time_split import split
 
 SpanArg = Literal["before", "after"]
 
@@ -19,6 +20,7 @@ class SpanWidget:
         step: Max value in the user form for integer spans. Set to zero to disable.
         duration: Allow duration-based (timedelta) inputs.
         all: Allow the `'all'` option.
+        empty: Allow the `'empty'` option. Derive if ``None``.
         free_from: Allow free-form input parsed using :func:`ast.literal_eval`.
     """
 
@@ -29,6 +31,7 @@ class SpanWidget:
         step: int = 10,
         duration: bool = True,
         all: bool = True,
+        empty: bool | None = None,
         free_from: bool = True,
     ) -> None:
         if span not in {"before", "after"}:
@@ -45,6 +48,14 @@ class SpanWidget:
             kinds.append(SpanType.DURATION)
         if all:
             kinds.append(SpanType.ALL)
+        if empty is None:
+            try:
+                split(schedule=["2019-05-11"], after="empty")
+                empty = True
+            except Exception:
+                empty = False
+        if empty:
+            kinds.append(SpanType.EMPTY)
         if free_from or query_span is not None:
             kinds.append(SpanType.FREE_FORM)
 
@@ -100,6 +111,9 @@ class SpanWidget:
         if kind is SpanType.ALL:
             text_input_key = text_input_key + "-all"
             st.session_state[text_input_key] = "all"
+        if kind is SpanType.EMPTY:
+            text_input_key = text_input_key + "-empty"
+            st.session_state[text_input_key] = "empty"
         else:
             st.session_state.setdefault(text_input_key, "10 days 6 hours")
 
@@ -119,6 +133,8 @@ class SpanWidget:
     def _span_kind(cls, query_span: str) -> SpanType | None:
         if query_span == "all":
             return SpanType.ALL
+        if query_span == "empty":
+            return SpanType.EMPTY
 
         try:
             int(query_span)
@@ -147,6 +163,8 @@ class SpanWidget:
     def _process_user_input(self, kind: SpanType, user_input: str) -> Span:
         if kind == SpanType.ALL:
             return "all"
+        if kind == SpanType.EMPTY:
+            return "empty"
 
         if kind is SpanType.FREE_FORM:
             try:

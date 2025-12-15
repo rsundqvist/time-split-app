@@ -58,9 +58,10 @@ class SpanType(StrEnum):
     """Schedule input types."""
 
     STEP = "Step 🪜"
-    DURATION = "Duration :stopwatch:"
-    ALL = "All data :100:"
-    FREE_FORM = "Free form :memo:"
+    DURATION = "Duration ⏱"
+    ALL = "All data 💯"
+    EMPTY = "No data 🚫"
+    FREE_FORM = "Free form 📝"
 
 
 class ExpandLimitsType(StrEnum):
