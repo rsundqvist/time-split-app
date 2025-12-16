@@ -6,12 +6,12 @@ Values in this module are treated as hard limits by the server.
 from rics.env import read as _env
 
 # Configurable by application users
-PLOT_RAW_TIMESERIES: bool = _env.read_bool("PLOT_AGGREGATIONS_PER_FOLD", True)
+PLOT_RAW_TIMESERIES: bool = _env.read_bool("PLOT_RAW_TIMESERIES", True)
 """Enable plot in the `🔍 Show raw data` tab."""
 PLOT_AGGREGATIONS_PER_FOLD: bool = _env.read_bool("PLOT_AGGREGATIONS_PER_FOLD", True)
 """Enable plots in the `📈 Aggregations per fold` tab."""
 FIGURE_DPI: int = _env.read_int("FIGURE_DPI", 200)
-"""Controls figure fidelity. Higher values look better, but is a lot slower."""
+"""Controls figure fidelity when possible. Higher values look better but is slower."""
 MAX_SPLITS = _env.read_int("MAX_SPLITS", 100)
 """Upper fold count limit. Prevents figures from getting too large."""
 
