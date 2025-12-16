@@ -297,7 +297,7 @@ class DataWidget:
     ) -> None:
         st.subheader("Data", divider="rainbow")
 
-        df, info = self._head(df)
+        df, info = self._tail(df)
         if style_fn:
             df = style_fn(df)
         st.dataframe(df, hide_index=False, width="stretch")
@@ -306,7 +306,7 @@ class DataWidget:
     def plot_data(self, df: pd.DataFrame) -> None:
         start = perf_counter()
 
-        df, info = self._head(df)
+        df, info = self._tail(df)
 
         ax = df.plot()
         ax.figure.suptitle(df.index.name)
@@ -321,9 +321,9 @@ class DataWidget:
         log_perf(msg, df, seconds, extra={"figure": "raw"})
         st.caption(msg + " " + info)
 
-    def _head(self, df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
+    def _tail(self, df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
         n_df = len(df)
-        head = df.head(self.n_samples) if (0 < self.n_samples < n_df) else df
+        head = df.tail(self.n_samples) if (0 < self.n_samples < n_df) else df
         n_head = len(head)
 
         pretty_head = make_formatter(n_head)(n_head)
@@ -331,7 +331,7 @@ class DataWidget:
 
         return (
             head,
-            f"Showing {'all' if n_df == n_head else 'the first'} `{pretty_head}` of `{pretty_df}` (`{n_head / n_df:.2%}`) rows.",
+            f"Showing {'all' if n_df == n_head else 'the last'} `{pretty_head}` of `{pretty_df}` (`{n_head / n_df:.2%}`) rows.",
         )
 
     def get_data_sources(self) -> dict[tuple[DataSource, int | None], tuple[str, str]]:
@@ -367,38 +367,6 @@ class DataWidget:
             )
 
         return sources
-
-    @classmethod
-    def select_range_subset(cls, df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[pd.Timestamp, pd.Timestamp]]:
-        min_value = df.index[0].to_pydatetime()
-        max_value = df.index[-1].to_pydatetime()
-
-        with st.container(border=True):
-            st.subheader("Subset range", divider="red")
-            st.caption("Select a subset of the available range of data.")
-
-            with st.container(border=True):
-                start, end = st.slider(
-                    "partial-range",
-                    min_value=min_value,
-                    max_value=max_value,
-                    value=(min_value, max_value),
-                    step=pd.Timedelta(minutes=5).to_pytimedelta(),
-                    format="YYYY-MM-DD HH:mm:ss",
-                    help="Drag the sliders to use a subset of the original data.",
-                    label_visibility="collapsed",
-                )
-
-            avail = (max_value - min_value).total_seconds()
-            used = (end - start).total_seconds()
-            st.caption(
-                f"You've selected `{format_seconds(used)}` of `{format_seconds(avail)}` "
-                f"(`{used / avail:.1%}`) of the total available data range."
-            )
-
-        df = df[start:end]
-        limits = df.index.min(), df.index.max()
-        return df, limits
 
     @staticmethod
     def _select_index(df: pd.DataFrame) -> pd.DataFrame:
