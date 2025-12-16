@@ -8,6 +8,7 @@ from collections.abc import Callable
 import pandas as pd
 import streamlit as st
 import streamlit.config as stc
+from pandas import DataFrame
 from rics.strings import format_bytes, format_seconds
 
 from ._data_loader_widget import DataLoaderWidget
@@ -20,10 +21,27 @@ from ._sample_data import SampleDataWidget
 from ._loader_from_env_entrypoint import from_env_entrypoint
 from .load import error_on_unaggregated_data, make_formatter
 from ...formatting import select_cmap, select_formatters
+from rics.misc import get_by_full_name
 
 
 def _get_upload_limit() -> int:
     return int(stc.get_option("server.maxUploadSize"))
+
+
+@st.cache_resource
+def _get_plot_fn() -> Callable[[DataFrame], None]:
+    if value := config.PLOT_RAW_TIMESERIES_FN:
+        LOGGER.info(f"Using {config.PLOT_RAW_TIMESERIES_FN=}.")
+        return get_by_full_name(value, default_module=__package__)
+
+    try:
+        import plotly.express as backend
+
+        LOGGER.info(f"Using {DataWidget.plot_plotly.__qualname__} to plot raw timeseries.")
+        return DataWidget.plot_plotly
+    except ImportError:
+        LOGGER.info(f"Using {DataWidget.plot_matplotlib.__qualname__} to plot raw timeseries.")
+        return DataWidget.plot_matplotlib
 
 
 @dataclass(frozen=True)
@@ -38,6 +56,9 @@ class DataWidget:
     """Widget used to load included datasets."""
     custom_dataset_loader: list[DataLoaderWidget] = field(default_factory=from_env_entrypoint)
     """List of user-defined loader implementations."""
+
+    plot_fn: Callable[[DataFrame], None] = field(default_factory=_get_plot_fn)
+    """Function to use to plot the data."""
 
     n_samples: int = -1
     """Number of sample rows to show.
@@ -308,18 +329,27 @@ class DataWidget:
 
         df, info = self._tail(df)
 
-        ax = df.plot()
-        ax.figure.suptitle(df.index.name)
-        ax.set_xlabel(None)
-        ax.figure.autofmt_xdate()
-
-        with st.container(border=True):
-            st.pyplot(ax.figure, dpi=config.FIGURE_DPI)
+        self.plot_fn(df)
 
         seconds = perf_counter() - start
         msg = f"Created `raw` figure for data of `shape={df.shape}` in `{format_seconds(seconds)}`."
         log_perf(msg, df, seconds, extra={"figure": "raw"})
         st.caption(msg + " " + info)
+
+    @classmethod
+    def plot_matplotlib(cls, df: DataFrame) -> None:
+        ax = df.plot(backend="matplotlib")
+        ax.figure.suptitle(df.index.name)
+        ax.set_xlabel(None)
+        ax.figure.autofmt_xdate()
+        with st.container(border=True):
+            st.pyplot(ax.figure, dpi=config.FIGURE_DPI)
+
+    @classmethod
+    def plot_plotly(cls, df: pd.DataFrame) -> None:
+        fig = df.plot(backend="plotly")
+        with st.container(border=True):
+            st.plotly_chart(fig, width="stretch")
 
     def _tail(self, df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
         n_df = len(df)

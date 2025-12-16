@@ -1,19 +1,21 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from time import perf_counter
-from typing import Collection
+from typing import Collection, Callable
 
 import pandas as pd
 import streamlit as st
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
+from rics.misc import get_by_full_name
 from rics.strings import format_seconds
 from time_split._frontend._to_string import stringify
 from time_split.integration.pandas import split_pandas
 from time_split.types import DatetimeIndexSplitterKwargs
 
 from time_split_app import config
-from time_split_app._logging import log_perf
+
+
 from time_split_app.formatting import select_cmap, select_formatters
 
 
@@ -23,7 +25,8 @@ class AggregationWidget:
     Args:
         aggregations: Aggregation options.
         odd_row_props: Properties for oddly-numbered fold rows in the output table.
-        default: Default aggregation
+        default: Default aggregation per columns.
+        plot_fn: Function used to plot folds.
     """
 
     def __init__(
@@ -31,10 +34,14 @@ class AggregationWidget:
         aggregations: Collection[str] = ("min", "mean", "max", "sum"),
         odd_row_props: str = "background-color: rgba(100, 100, 100, 0.5)",
         default: str = "mean",
+        plot_fn: Callable[[pd.DataFrame, dict[str, str]], None] | None = None,
     ) -> None:
         self._agg = tuple(aggregations)
         self._props = str(odd_row_props)
         self._default = self._agg.index(default)
+        if plot_fn is None:
+            plot_fn = _get_plot_fn()
+        self._plot_fn = plot_fn
 
     def plot_aggregations(
         self,
@@ -55,15 +62,26 @@ class AggregationWidget:
             agg = self.aggregate(df, split_kwargs=split_kwargs, aggregations=aggregations)
 
             if config.PLOT_AGGREGATIONS_PER_FOLD:
-                st.subheader("Plot", divider="rainbow")
-                self._plot(agg, aggregations | reserved)
+                start = perf_counter()
+                self._plot_fn(agg, aggregations | reserved)
+
+                seconds = perf_counter() - start
+                msg = f"Created `aggregation` figure for `{len(folds)}` folds in `{format_seconds(seconds)}`."
+                log_perf(
+                    msg,
+                    df,
+                    seconds,
+                    extra={"figure": "aggregated-columns", "n_folds": len(folds)},
+                )
+                st.caption(msg)
             else:
                 st.warning(f"{config.PLOT_AGGREGATIONS_PER_FOLD=}", icon="⚠️")
                 st.write("See the `❔ About` tab to update the configuration. Don't forget to click `Apply`!")
 
-    @staticmethod
-    def _plot(df: pd.DataFrame, aggregations: dict[str, str]) -> None:
+    @classmethod
+    def plot_matplotlib(cls, df: pd.DataFrame, aggregations: dict[str, str]) -> None:
         start = perf_counter()
+        st.subheader("Plot", divider="rainbow")
 
         columns = df.columns
         folds = df.pivot_table(index="fold", columns="dataset", aggfunc=aggregations, sort=False)
@@ -92,24 +110,15 @@ class AggregationWidget:
 
             p += 1 / len(columns)
             pbar.progress(p)
-        seconds = perf_counter() - start
 
+        seconds = perf_counter() - start
         pbar.progress(
             p,
             f"Finished plotting `{len(folds)}` folds and `{len(columns)}` columns in `{int(1000 * seconds)}` ms.",
         )
 
-        msg = f"Created `aggregation` figure for data of `shape={folds.shape}` in `{format_seconds(seconds)}`."
-        log_perf(
-            msg,
-            df,
-            seconds,
-            extra={"figure": "aggregated-columns", "n_folds": len(folds)},
-        )
-        st.caption(msg)
-
-    @staticmethod
-    def _plot_seaborn(df: pd.DataFrame, aggregations: dict[str, str]) -> None:  # Not used
+    @classmethod
+    def plot_seaborn(cls, df: pd.DataFrame, aggregations: dict[str, str]) -> None:  # Not used
         import seaborn as sns
 
         melt = df.melt(ignore_index=False).reset_index()
@@ -134,6 +143,17 @@ class AggregationWidget:
 
         st.pyplot(g.figure, clear_figure=True, dpi=config.FIGURE_DPI)
 
+    @classmethod
+    def plot_plotly(cls, df: pd.DataFrame, aggregations: dict[str, str]) -> None:
+        st.subheader("Plot", divider="rainbow")
+
+        df.to_pickle("df.pkl")
+        with open("aggregations.json", "w") as f:
+            f.write(str(aggregations).replace("'", '"'))
+
+        fig = df.plot(backend="plotly")
+        st.plotly_chart(fig, width="stretch")
+
     def aggregate(
         self,
         df: pd.DataFrame,
@@ -154,7 +174,7 @@ class AggregationWidget:
         """
         start = perf_counter()
 
-        agg = self._aggregate(df, split_kwargs, aggregations)
+        agg, num_folds = self._aggregate(df, split_kwargs, aggregations)
 
         left, right = st.columns([20, 3])
         with right, st.container(border=True):
@@ -178,7 +198,7 @@ class AggregationWidget:
         df: pd.DataFrame,
         split_kwargs: DatetimeIndexSplitterKwargs,
         aggregations: dict[str, str],
-    ) -> pd.DataFrame:
+    ) -> tuple[pd.DataFrame, int]:
         frames: dict[tuple[int, pd.Timestamp], pd.DataFrame] = {}
 
         for fold in split_pandas(df, **split_kwargs):
@@ -192,7 +212,7 @@ class AggregationWidget:
 
             frames[(len(frames), fold.training_date)] = agg.T
 
-        return pd.concat(frames, names=["fold_no", "fold", "dataset"])
+        return pd.concat(frames, names=["fold_no", "fold", "dataset"]), len(frames)
 
     @classmethod
     def _format_table(cls, df: pd.DataFrame) -> "pd.io.formats.style.Styler":
@@ -265,3 +285,22 @@ def _hours(s: pd.Series) -> float:
     seconds = float(timedelta.total_seconds())
     hours = seconds / (60 * 60)
     return hours
+
+
+@st.cache_resource
+def _get_plot_fn() -> Callable[[pd.DataFrame, dict[str, str]], None]:
+    if value := config.PLOT_RAW_TIMESERIES_FN:
+        LOGGER.info(f"Using {config.PLOT_RAW_TIMESERIES_FN=}.")
+        return get_by_full_name(value, default_module=__package__)
+
+    try:
+        import plotly.express as backend
+
+        LOGGER.info(f"Using {AggregationWidget.plot_plotly.__qualname__} to plot raw timeseries.")
+        return AggregationWidget.plot_plotly
+    except ImportError:
+        LOGGER.info(f"Using {AggregationWidget.plot_matplotlib.__qualname__} to plot raw timeseries.")
+        return AggregationWidget.plot_matplotlib
+
+
+from time_split_app._logging import log_perf, LOGGER
