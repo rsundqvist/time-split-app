@@ -20,14 +20,14 @@ Built-ins include :meth:`.DataWidget.plot_matplotlib` and :meth:`DataWidget.plot
 
 PLOT_AGGREGATIONS_PER_FOLD: bool = _env.read_bool("PLOT_AGGREGATIONS_PER_FOLD", True)
 """Enable plots in the `📈 Aggregations per fold` tab."""
-PLOT_AGGREGATIONS_PER_FOLD_FN: str = _env.read_str(
-    "PLOT_AGGREGATIONS_PER_FOLD_FN",
-    default="time_split_app.widgets.data:DataWidget.plot_plotly",
-)
+PLOT_AGGREGATIONS_PER_FOLD_FN: str = _env.read_str("PLOT_AGGREGATIONS_PER_FOLD_FN")
 """Plotter to use in the `📈 Aggregations per fold` tab.
 
-* Type: ``(pandas.DataFrame, aggregations: dict[str, str]) -> None``.
+* Type: ``(pandas.DataFrame, DatetimeIndexSplitterKwargs, aggregations: dict[str, str]) -> None``.
 * Format: ``path.to.module:func_name``.
+
+Built-ins include :meth:`.AggregationWidget.plot_matplotlib` and :meth:`AggregationWidget.plot_plotly`. Defaults to
+``plot_plotly`` if ``plotly`` is installed, otherwise ``plot_matplotlib`` is used.
 """
 
 FIGURE_DPI: int = _env.read_int("FIGURE_DPI", 200)

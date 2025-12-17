@@ -1,5 +1,6 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
+from importlib.util import find_spec
 from time import perf_counter
 from typing import Collection, Callable
 
@@ -9,9 +10,12 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from rics.misc import get_by_full_name
 from rics.strings import format_seconds
+from time_split import split
 from time_split._frontend._to_string import stringify
 from time_split.integration.pandas import split_pandas
 from time_split.types import DatetimeIndexSplitterKwargs
+
+from time_split_app._logging import log_perf, LOGGER
 
 from time_split_app import config
 
@@ -34,7 +38,7 @@ class AggregationWidget:
         aggregations: Collection[str] = ("min", "mean", "max", "sum"),
         odd_row_props: str = "background-color: rgba(100, 100, 100, 0.5)",
         default: str = "mean",
-        plot_fn: Callable[[pd.DataFrame, dict[str, str]], None] | None = None,
+        plot_fn: Callable[[pd.DataFrame, DatetimeIndexSplitterKwargs, dict[str, str]], None] | None = None,
     ) -> None:
         self._agg = tuple(aggregations)
         self._props = str(odd_row_props)
@@ -43,7 +47,45 @@ class AggregationWidget:
             plot_fn = _get_plot_fn()
         self._plot_fn = plot_fn
 
-    def plot_aggregations(
+    @classmethod
+    def show_data(
+        cls,
+        df: pd.DataFrame,
+        split_kwargs: DatetimeIndexSplitterKwargs,
+        aggregations: dict[str, str],
+    ) -> pd.DataFrame:
+        """Aggregate datasets resulting from a split of `df`.
+
+        Args:
+            df: A dataframe. Must have a ``DatetimeIndex``.
+            split_kwargs: Keyword arguments for :func:`time_split.split`.
+            aggregations: A dict ``{column: agg_fn}``.
+
+        Returns:
+            A frame with the same columns as `df` and a `MultiIndex` with levels
+            ``fold_no[int], fold[pd.Timestamp], dataset[str]``.
+        """
+        start = perf_counter()
+
+        agg, num_folds = cls.aggregate(df, split_kwargs, aggregations)
+
+        left, right = st.columns([20, 3])
+        with right, st.container(border=True):
+            st.subheader("Table style", divider=True)
+            table = cls._format_table(agg)
+        with left:
+            st.dataframe(table)
+
+        # Record performance
+        n_folds = agg.index.get_level_values("fold").nunique()
+        seconds = perf_counter() - start
+        msg = f"Aggregated datasets in {n_folds} folds for data of `shape={df.shape}` in `{format_seconds(seconds)}`."
+        log_perf(msg, df, seconds, extra={"n_folds": n_folds, "aggregations": aggregations}, level=logging.DEBUG)
+        st.caption(msg)
+
+        return agg
+
+    def plot_data(
         self,
         df: pd.DataFrame,
         *,
@@ -56,32 +98,31 @@ class AggregationWidget:
             raise ValueError(f"Found {len(forbidden)} reserved keys {sorted(aggregations)} in {aggregations=}")
 
         with st.spinner("Aggregating data..."):
-            st.subheader("Aggregated folds", divider="rainbow")
-
-            # TODO frame agg + figure in separate calls
-            agg = self.aggregate(df, split_kwargs=split_kwargs, aggregations=aggregations)
-
             if config.PLOT_AGGREGATIONS_PER_FOLD:
                 start = perf_counter()
-                self._plot_fn(agg, aggregations | reserved)
 
+                self._plot_fn(df, split_kwargs, aggregations | reserved)
+
+                n_folds = len(split(available=df.index, **split_kwargs))
                 seconds = perf_counter() - start
-                msg = f"Created `aggregation` figure for `{len(folds)}` folds in `{format_seconds(seconds)}`."
-                log_perf(
-                    msg,
-                    df,
-                    seconds,
-                    extra={"figure": "aggregated-columns", "n_folds": len(folds)},
-                )
+                msg = f"Created `aggregation` figure for `{n_folds}` folds in `{format_seconds(seconds)}`."
+                extra = {"figure": "aggregated-columns", "n_folds": n_folds}
+                log_perf(msg, df, seconds, extra=extra)
                 st.caption(msg)
             else:
                 st.warning(f"{config.PLOT_AGGREGATIONS_PER_FOLD=}", icon="⚠️")
                 st.write("See the `❔ About` tab to update the configuration. Don't forget to click `Apply`!")
 
     @classmethod
-    def plot_matplotlib(cls, df: pd.DataFrame, aggregations: dict[str, str]) -> None:
+    def plot_matplotlib(
+        cls,
+        df: pd.DataFrame,
+        split_kwargs: DatetimeIndexSplitterKwargs,
+        aggregations: dict[str, str],
+    ) -> None:
         start = perf_counter()
-        st.subheader("Plot", divider="rainbow")
+        st.subheader("Aggregated folds", divider="rainbow")
+        df, _ = cls.aggregate(df, split_kwargs, aggregations)
 
         columns = df.columns
         folds = df.pivot_table(index="fold", columns="dataset", aggfunc=aggregations, sort=False)
@@ -118,88 +159,28 @@ class AggregationWidget:
         )
 
     @classmethod
-    def plot_seaborn(cls, df: pd.DataFrame, aggregations: dict[str, str]) -> None:  # Not used
-        import seaborn as sns
-
-        melt = df.melt(ignore_index=False).reset_index()
-        melt["dataset"] = melt["dataset"].astype("category")
-        melt["variable"] = melt["variable"].map(lambda c: f"${aggregations[c]}({c})$".replace("_", "\\\\_"))
-
-        g = sns.FacetGrid(
-            melt,
-            height=4,
-            aspect=4,
-            row="variable",
-            hue="dataset",
-            sharex=True,
-            sharey=False,
-        )
-        g.map_dataframe(sns.lineplot, x="fold", y="value", marker="o")
-
-        g.set_ylabels("")
-        g.set_titles(row_template="{row_name}")
-        g.figure.autofmt_xdate(ha="center", rotation=15)
-        g.add_legend(loc="upper left", title="", bbox_to_anchor=(0, 1.01, 0, 0))
-
-        st.pyplot(g.figure, clear_figure=True, dpi=config.FIGURE_DPI)
-
-    @classmethod
-    def plot_plotly(cls, df: pd.DataFrame, aggregations: dict[str, str]) -> None:
-        st.subheader("Plot", divider="rainbow")
-
-        df.to_pickle("df.pkl")
-        with open("aggregations.json", "w") as f:
-            f.write(str(aggregations).replace("'", '"'))
-
-        fig = df.plot(backend="plotly")
-        st.plotly_chart(fig, width="stretch")
-
-    def aggregate(
-        self,
+    def plot_plotly(
+        cls,
         df: pd.DataFrame,
-        *,
         split_kwargs: DatetimeIndexSplitterKwargs,
         aggregations: dict[str, str],
-    ) -> pd.DataFrame:
-        """Aggregate datasets resulting from a split of `df`.
-
-        Args:
-            df: A dataframe. Must have a ``DatetimeIndex``.
-            split_kwargs: Keyword arguments for :func:`time_split.split`.
-            aggregations: A dict ``{column: agg_fn}``.
-
-        Returns:
-            A frame with the same columns as `df` and a `MultiIndex` with levels
-            ``fold_no[int], fold[pd.Timestamp], dataset[str]``.
-        """
-        start = perf_counter()
-
-        agg, num_folds = self._aggregate(df, split_kwargs, aggregations)
-
-        left, right = st.columns([20, 3])
-        with right, st.container(border=True):
-            st.subheader("Table style", divider=True)
-            table = self._format_table(agg)
-        with left:
-            st.dataframe(table)
-
-        # Record performance
-        n_folds = agg.index.get_level_values("fold").nunique()
-        seconds = perf_counter() - start
-        msg = f"Aggregated datasets in {n_folds} folds for data of `shape={df.shape}` in `{format_seconds(seconds)}`."
-        log_perf(msg, df, seconds, extra={"n_folds": n_folds, "aggregations": aggregations}, level=logging.DEBUG)
-        st.caption(msg)
-
-        return agg
+    ) -> None:
+        st.subheader("Aggregated folds", divider="rainbow")
+        df, _ = cls.aggregate(df, split_kwargs, aggregations)
+        fig = df.droplevel("fold_no").plot(line_group="dataset", backend="plotly")
+        st.plotly_chart(fig, width="stretch")
 
     @classmethod
-    def _aggregate(
+    def aggregate(
         cls,
         df: pd.DataFrame,
         split_kwargs: DatetimeIndexSplitterKwargs,
         aggregations: dict[str, str],
     ) -> tuple[pd.DataFrame, int]:
         frames: dict[tuple[int, pd.Timestamp], pd.DataFrame] = {}
+
+        added_by_this_method = {"n_rows", "n_hours"}
+        aggregations = {col: agg for col, agg in aggregations.items() if col not in added_by_this_method}
 
         for fold in split_pandas(df, **split_kwargs):
             data = fold.data.agg(aggregations).rename("Data")
@@ -288,19 +269,11 @@ def _hours(s: pd.Series) -> float:
 
 
 @st.cache_resource
-def _get_plot_fn() -> Callable[[pd.DataFrame, dict[str, str]], None]:
-    if value := config.PLOT_RAW_TIMESERIES_FN:
-        LOGGER.info(f"Using {config.PLOT_RAW_TIMESERIES_FN=}.")
+def _get_plot_fn() -> Callable[[pd.DataFrame, DatetimeIndexSplitterKwargs, dict[str, str]], None]:
+    if value := config.PLOT_AGGREGATIONS_PER_FOLD_FN:
+        LOGGER.info(f"Using {config.PLOT_AGGREGATIONS_PER_FOLD_FN=}.")
         return get_by_full_name(value, default_module=__package__)
 
-    try:
-        import plotly.express as backend
-
-        LOGGER.info(f"Using {AggregationWidget.plot_plotly.__qualname__} to plot raw timeseries.")
-        return AggregationWidget.plot_plotly
-    except ImportError:
-        LOGGER.info(f"Using {AggregationWidget.plot_matplotlib.__qualname__} to plot raw timeseries.")
-        return AggregationWidget.plot_matplotlib
-
-
-from time_split_app._logging import log_perf, LOGGER
+    plotter = AggregationWidget.plot_plotly if find_spec("plotly") else AggregationWidget.plot_matplotlib
+    LOGGER.info(f"Using {plotter.__qualname__} to plot raw timeseries.")
+    return plotter

@@ -1,5 +1,6 @@
 import warnings
 from dataclasses import dataclass, field
+from importlib.util import find_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import perf_counter
@@ -34,14 +35,9 @@ def _get_plot_fn() -> Callable[[DataFrame], None]:
         LOGGER.info(f"Using {config.PLOT_RAW_TIMESERIES_FN=}.")
         return get_by_full_name(value, default_module=__package__)
 
-    try:
-        import plotly.express as backend
-
-        LOGGER.info(f"Using {DataWidget.plot_plotly.__qualname__} to plot raw timeseries.")
-        return DataWidget.plot_plotly
-    except ImportError:
-        LOGGER.info(f"Using {DataWidget.plot_matplotlib.__qualname__} to plot raw timeseries.")
-        return DataWidget.plot_matplotlib
+    plotter = DataWidget.plot_plotly if find_spec("plotly") else DataWidget.plot_matplotlib
+    LOGGER.info(f"Using {plotter.__qualname__} to plot raw timeseries.")
+    return plotter
 
 
 @dataclass(frozen=True)
