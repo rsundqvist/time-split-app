@@ -2,7 +2,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from importlib.util import find_spec
 from time import perf_counter
-from typing import Collection, Callable
+from typing import Collection, Callable, TypeVar
 
 import pandas as pd
 import streamlit as st
@@ -21,6 +21,8 @@ from time_split_app import config
 
 
 from time_split_app.formatting import select_cmap, select_formatters
+
+FigureT = TypeVar("FigureT")
 
 
 class AggregationWidget:
@@ -120,6 +122,29 @@ class AggregationWidget:
         split_kwargs: DatetimeIndexSplitterKwargs,
         aggregations: dict[str, str],
     ) -> None:
+        def plot(x: pd.DataFrame, column: str) -> Figure:
+            fig, ax = plt.subplots()
+            x[column].plot(ax=ax, marker="o")
+            ax.set_title(f"${aggregations[column]}({column!r})$".replace("_", "\\_"))
+            ax.set_xlabel("")
+            ax.set_xticks(x.index)
+            fig.autofmt_xdate(ha="center", rotation=15)
+            return fig
+
+        def show(fig: Figure) -> None:
+            st.pyplot(fig, clear_figure=True, dpi=config.FIGURE_DPI)
+
+        cls._plot(df, split_kwargs, aggregations, plot, show)
+
+    @classmethod
+    def _plot(
+        cls,
+        df: pd.DataFrame,
+        split_kwargs: DatetimeIndexSplitterKwargs,
+        aggregations: dict[str, str],
+        plot: Callable[[pd.DataFrame, str], FigureT],
+        show: Callable[[FigureT], None],
+    ):
         start = perf_counter()
         st.subheader("Aggregated folds", divider="rainbow")
         df, _ = cls.aggregate(df, split_kwargs, aggregations)
@@ -128,17 +153,8 @@ class AggregationWidget:
         folds = df.pivot_table(index="fold", columns="dataset", aggfunc=aggregations, sort=False)
         pbar, p = st.progress(0.0), 0.0
 
-        def plot(column: str) -> Figure:
-            fig, ax = plt.subplots()
-            folds[column].plot(ax=ax, marker="o")
-            ax.set_title(f"${aggregations[column]}({column!r})$".replace("_", "\\_"))
-            ax.set_xlabel("")
-            ax.set_xticks(folds.index)
-            fig.autofmt_xdate(ha="center", rotation=15)
-            return fig
-
         with ThreadPoolExecutor(max_workers=2) as executor:
-            futures = [executor.submit(plot, column) for column in columns]
+            futures = [executor.submit(plot, folds[column], column) for column in columns]
 
         tabs = st.tabs([c for c in columns])
 
@@ -147,7 +163,7 @@ class AggregationWidget:
 
             fig = future.result()
             with tabs[i]:
-                st.pyplot(fig, clear_figure=True, dpi=config.FIGURE_DPI)
+                show(fig)
 
             p += 1 / len(columns)
             pbar.progress(p)
@@ -165,10 +181,28 @@ class AggregationWidget:
         split_kwargs: DatetimeIndexSplitterKwargs,
         aggregations: dict[str, str],
     ) -> None:
-        st.subheader("Aggregated folds", divider="rainbow")
-        df, _ = cls.aggregate(df, split_kwargs, aggregations)
-        fig = df.droplevel("fold_no").plot(line_group="dataset", backend="plotly")
-        st.plotly_chart(fig, width="stretch")
+        import plotly.graph_objects as go
+
+        colors = {"Data": "blue", "Future data": "red"}
+
+        def plot(x: pd.DataFrame, column: str) -> go.Figure:
+            fig = go.Figure()
+
+            for dataset in x.columns:
+                color = colors[dataset]
+                fig.add_trace(
+                    go.Scatter(x=x.index, y=x[dataset], name=dataset, mode="lines+markers", line=dict(color=color))
+                )
+
+            fig.update_layout(
+                title=f"{aggregations[column]}({column!r})",
+            )
+            return fig
+
+        def show(fig: go.Figure) -> None:
+            st.plotly_chart(fig, width="stretch")
+
+        cls._plot(df, split_kwargs, aggregations, plot, show)
 
     @classmethod
     def aggregate(

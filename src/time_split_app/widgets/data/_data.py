@@ -343,7 +343,11 @@ class DataWidget:
 
     @classmethod
     def plot_plotly(cls, df: pd.DataFrame) -> None:
-        fig = df.plot(backend="plotly")
+        import plotly.graph_objects as go
+
+        fig = go.Figure()
+        for column in df.columns:
+            fig.add_trace(go.Scatter(x=df.index, y=df[column], name=column, mode="lines"))
         with st.container(border=True):
             st.plotly_chart(fig, width="stretch")
 
