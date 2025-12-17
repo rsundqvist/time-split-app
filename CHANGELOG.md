@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+* The `PLOT_RAW_TIMESERIES` config value is now read from the correct variable.
+* The `seaborn` package is no longer listed as required (was not used).
 ## [2.4.0] - 2025-12-15
 
 ### Added

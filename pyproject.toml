@@ -36,7 +36,6 @@ dependencies = [
     #   time-split[app] -> time-split-app -> time-split[plotting]
     # Add the plotting deps manually here (without specifying versions) just in case.
     "matplotlib",
-    "seaborn",
 ]
 
 [project.urls]

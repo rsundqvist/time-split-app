@@ -52,7 +52,7 @@ See https://time-split.readthedocs.io/ for library documentation.
 Please visit the [GitHub page](https://github.com/rsundqvist/time-split-app/) for questions or feedback.
 
 #### ⚙️ Server configuration
-These values cannot be changed.
+These values cannot be increased, but you may decrease/disable some parameters to improve performance.
 
 {config.get_server_config_info()}
 
