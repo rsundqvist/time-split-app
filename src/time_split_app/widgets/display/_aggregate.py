@@ -1,20 +1,32 @@
 import logging
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, Future
+from importlib.util import find_spec
 from time import perf_counter
-from typing import Collection
+from typing import Collection, Callable, TypeVar, TYPE_CHECKING
 
 import pandas as pd
 import streamlit as st
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
+from rics.misc import get_by_full_name
 from rics.strings import format_seconds
+from time_split import split
 from time_split._frontend._to_string import stringify
 from time_split.integration.pandas import split_pandas
 from time_split.types import DatetimeIndexSplitterKwargs
 
+from time_split_app._logging import log_perf, LOGGER
+
 from time_split_app import config
-from time_split_app._logging import log_perf
+
+
 from time_split_app.formatting import select_cmap, select_formatters
+
+if TYPE_CHECKING:
+    import plotly  # type: ignore[import-untyped]
+
+FigureT = TypeVar("FigureT")
+DATASET_COLORS = {"Data": "blue", "Future data": "red"}
 
 
 class AggregationWidget:
@@ -22,122 +34,26 @@ class AggregationWidget:
 
     Args:
         aggregations: Aggregation options.
-        odd_row_props: Properties for oddly-numbered fold rows in the output table.
-        default: Default aggregation
+        default: Default aggregation for new columns.
+        plot_fn: Function used to plot folds.
     """
 
     def __init__(
         self,
         aggregations: Collection[str] = ("min", "mean", "max", "sum"),
-        odd_row_props: str = "background-color: rgba(100, 100, 100, 0.5)",
         default: str = "mean",
+        plot_fn: Callable[[pd.DataFrame, DatetimeIndexSplitterKwargs, dict[str, str]], None] | None = None,
     ) -> None:
         self._agg = tuple(aggregations)
-        self._props = str(odd_row_props)
         self._default = self._agg.index(default)
+        if plot_fn is None:
+            plot_fn = _get_plot_fn()
+        self._plot_fn = plot_fn
 
-    def plot_aggregations(
-        self,
+    @classmethod
+    def show_data(
+        cls,
         df: pd.DataFrame,
-        *,
-        split_kwargs: DatetimeIndexSplitterKwargs,
-        aggregations: dict[str, str],
-    ) -> None:
-        reserved = {"n_rows": "sum", "n_hours": "sum"}
-
-        if forbidden := set(reserved).intersection(aggregations):
-            raise ValueError(f"Found {len(forbidden)} reserved keys {sorted(aggregations)} in {aggregations=}")
-
-        with st.spinner("Aggregating data..."):
-            st.subheader("Aggregated folds", divider="rainbow")
-
-            # TODO frame agg + figure in separate calls
-            agg = self.aggregate(df, split_kwargs=split_kwargs, aggregations=aggregations)
-
-            if config.PLOT_AGGREGATIONS_PER_FOLD:
-                st.subheader("Plot", divider="rainbow")
-                self._plot(agg, aggregations | reserved)
-            else:
-                st.warning(f"{config.PLOT_AGGREGATIONS_PER_FOLD=}", icon="⚠️")
-                st.write("See the `❔ About` tab to update the configuration. Don't forget to click `Apply`!")
-
-    @staticmethod
-    def _plot(df: pd.DataFrame, aggregations: dict[str, str]) -> None:
-        start = perf_counter()
-
-        columns = df.columns
-        folds = df.pivot_table(index="fold", columns="dataset", aggfunc=aggregations, sort=False)
-        pbar, p = st.progress(0.0), 0.0
-
-        def plot(column: str) -> Figure:
-            fig, ax = plt.subplots()
-            folds[column].plot(ax=ax, marker="o")
-            ax.set_title(f"${aggregations[column]}({column!r})$".replace("_", "\\_"))
-            ax.set_xlabel("")
-            ax.set_xticks(folds.index)
-            fig.autofmt_xdate(ha="center", rotation=15)
-            return fig
-
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            futures = [executor.submit(plot, column) for column in columns]
-
-        tabs = st.tabs([c for c in columns])
-
-        for (i, column), future in zip(enumerate(columns), futures, strict=True):
-            pbar.progress(p, f"Plotting column `{i + 1}/{len(columns)}`: `{column!r}`")
-
-            fig = future.result()
-            with tabs[i]:
-                st.pyplot(fig, clear_figure=True, dpi=config.FIGURE_DPI)
-
-            p += 1 / len(columns)
-            pbar.progress(p)
-        seconds = perf_counter() - start
-
-        pbar.progress(
-            p,
-            f"Finished plotting `{len(folds)}` folds and `{len(columns)}` columns in `{int(1000 * seconds)}` ms.",
-        )
-
-        msg = f"Created `aggregation` figure for data of `shape={folds.shape}` in `{format_seconds(seconds)}`."
-        log_perf(
-            msg,
-            df,
-            seconds,
-            extra={"figure": "aggregated-columns", "n_folds": len(folds)},
-        )
-        st.caption(msg)
-
-    @staticmethod
-    def _plot_seaborn(df: pd.DataFrame, aggregations: dict[str, str]) -> None:  # Not used
-        import seaborn as sns
-
-        melt = df.melt(ignore_index=False).reset_index()
-        melt["dataset"] = melt["dataset"].astype("category")
-        melt["variable"] = melt["variable"].map(lambda c: f"${aggregations[c]}({c})$".replace("_", "\\\\_"))
-
-        g = sns.FacetGrid(
-            melt,
-            height=4,
-            aspect=4,
-            row="variable",
-            hue="dataset",
-            sharex=True,
-            sharey=False,
-        )
-        g.map_dataframe(sns.lineplot, x="fold", y="value", marker="o")
-
-        g.set_ylabels("")
-        g.set_titles(row_template="{row_name}")
-        g.figure.autofmt_xdate(ha="center", rotation=15)
-        g.add_legend(loc="upper left", title="", bbox_to_anchor=(0, 1.01, 0, 0))
-
-        st.pyplot(g.figure, clear_figure=True, dpi=config.FIGURE_DPI)
-
-    def aggregate(
-        self,
-        df: pd.DataFrame,
-        *,
         split_kwargs: DatetimeIndexSplitterKwargs,
         aggregations: dict[str, str],
     ) -> pd.DataFrame:
@@ -154,12 +70,12 @@ class AggregationWidget:
         """
         start = perf_counter()
 
-        agg = self._aggregate(df, split_kwargs, aggregations)
+        agg, num_folds = cls.aggregate(df, split_kwargs, aggregations)
 
         left, right = st.columns([20, 3])
         with right, st.container(border=True):
             st.subheader("Table style", divider=True)
-            table = self._format_table(agg)
+            table = cls._format_table(agg)
         with left:
             st.dataframe(table)
 
@@ -172,27 +88,120 @@ class AggregationWidget:
 
         return agg
 
+    def plot_data(
+        self,
+        df: pd.DataFrame,
+        *,
+        split_kwargs: DatetimeIndexSplitterKwargs,
+        aggregations: dict[str, str],
+    ) -> None:
+        reserved = {"n_rows": "sum", "n_hours": "sum"}
+
+        if forbidden := set(reserved).intersection(aggregations):
+            raise ValueError(f"Found {len(forbidden)} reserved keys {sorted(aggregations)} in {aggregations=}")
+
+        with st.spinner("Aggregating data..."):
+            if config.PLOT_AGGREGATIONS_PER_FOLD:
+                start = perf_counter()
+
+                self._plot_fn(df, split_kwargs, aggregations | reserved)
+
+                n_folds = len(split(available=df.index, **split_kwargs))
+                seconds = perf_counter() - start
+                msg = f"Created `aggregation` figure for `{n_folds}` folds in `{format_seconds(seconds)}`."
+                extra = {"figure": "aggregated-columns", "n_folds": n_folds}
+                log_perf(msg, df, seconds, extra=extra)
+                st.caption(msg)
+            else:
+                st.warning(f"{config.PLOT_AGGREGATIONS_PER_FOLD=}", icon="⚠️")
+                st.write("See the `❔ About` tab to update the configuration. Don't forget to click `Apply`!")
+
     @classmethod
-    def _aggregate(
+    def plot_matplotlib(
         cls,
         df: pd.DataFrame,
         split_kwargs: DatetimeIndexSplitterKwargs,
         aggregations: dict[str, str],
-    ) -> pd.DataFrame:
+    ) -> None:
+        cls._plot(df, split_kwargs, aggregations, _plot_mpl, _show_mpl)
+
+    @classmethod
+    def plot_plotly(
+        cls,
+        df: pd.DataFrame,
+        split_kwargs: DatetimeIndexSplitterKwargs,
+        aggregations: dict[str, str],
+    ) -> None:
+        cls._plot(df, split_kwargs, aggregations, _plot_plotly, _show_plotly)
+
+    @classmethod
+    def _plot(
+        cls,
+        df: pd.DataFrame,
+        split_kwargs: DatetimeIndexSplitterKwargs,
+        aggregations: dict[str, str],
+        plot: Callable[[pd.DataFrame, str, str], FigureT],
+        show: Callable[[FigureT], None],
+    ) -> None:
+        """Common plotting function."""
+        start = perf_counter()
+        st.subheader("Aggregated folds", divider="rainbow")
+        df, _ = cls.aggregate(df, split_kwargs, aggregations)
+
+        columns = df.columns
+        folds = df.pivot_table(index="fold", columns="dataset", aggfunc=aggregations, sort=False)
+        pbar, p = st.progress(0.0), 0.0
+
+        futures: list[Future[FigureT] | FigureT]
+        if max_workers := config.PLOT_AGGREGATIONS_PER_FOLD_NUM_THREADS:
+            with ThreadPoolExecutor(max_workers) as executor:
+                futures = [executor.submit(plot, folds[column], aggregations[column], column) for column in columns]
+        else:
+            futures = [plot(folds[column], aggregations[column], column) for column in columns]
+
+        tabs = st.tabs([c for c in columns])
+
+        for (i, column), future in zip(enumerate(columns), futures, strict=True):
+            pbar.progress(p, f"Plotting column `{i + 1}/{len(columns)}`: `{column!r}`")
+
+            fig = future.result() if isinstance(future, Future) else future
+            with tabs[i]:
+                show(fig)
+
+            p += 1 / len(columns)
+            pbar.progress(p)
+
+        seconds = perf_counter() - start
+        pbar.progress(
+            p,
+            f"Finished plotting `{len(folds)}` folds and `{len(columns)}` columns in `{int(1000 * seconds)}` ms.",
+        )
+
+    @classmethod
+    def aggregate(
+        cls,
+        df: pd.DataFrame,
+        split_kwargs: DatetimeIndexSplitterKwargs,
+        aggregations: dict[str, str],
+    ) -> tuple[pd.DataFrame, int]:
         frames: dict[tuple[int, pd.Timestamp], pd.DataFrame] = {}
+
+        added_by_this_method = {"n_rows", "n_hours"}
+        aggregations = {col: agg for col, agg in aggregations.items() if col not in added_by_this_method}
 
         for fold in split_pandas(df, **split_kwargs):
             data = fold.data.agg(aggregations).rename("Data")
             future_data = fold.future_data.agg(aggregations).rename("Future data")
 
-            # TODO Fixa dessa! Ska matcha "Row counts" i figur!!
             agg = pd.concat([data, future_data], axis=1)
             agg.loc["n_rows", [data.name, future_data.name]] = [len(fold.data), len(fold.future_data)]
             agg.loc["n_hours", [data.name, future_data.name]] = [_hours(fold.data), _hours(fold.future_data)]
 
-            frames[(len(frames), fold.training_date)] = agg.T
+            with pd.option_context("future.no_silent_downcasting", True):
+                agg = agg.T.fillna(0)
+            frames[(len(frames), fold.training_date)] = agg
 
-        return pd.concat(frames, names=["fold_no", "fold", "dataset"])
+        return pd.concat(frames, names=["fold_no", "fold", "dataset"]), len(frames)
 
     @classmethod
     def _format_table(cls, df: pd.DataFrame) -> "pd.io.formats.style.Styler":
@@ -265,3 +274,51 @@ def _hours(s: pd.Series) -> float:
     seconds = float(timedelta.total_seconds())
     hours = seconds / (60 * 60)
     return hours
+
+
+@st.cache_resource
+def _get_plot_fn() -> Callable[[pd.DataFrame, DatetimeIndexSplitterKwargs, dict[str, str]], None]:
+    if value := config.PLOT_AGGREGATIONS_PER_FOLD_FN:
+        LOGGER.info(f"Using {config.PLOT_AGGREGATIONS_PER_FOLD_FN=}.")
+        return get_by_full_name(value, default_module=__package__)  # type: ignore[no-any-return]
+
+    plotter = AggregationWidget.plot_plotly if find_spec("plotly") else AggregationWidget.plot_matplotlib
+    LOGGER.info(f"Using {plotter.__qualname__} to plot raw timeseries.")
+    return plotter
+
+
+def _plot_mpl(df: pd.DataFrame, agg: str, column: str) -> Figure:
+    fig, ax = plt.subplots()
+
+    for dataset in df.columns:
+        color = DATASET_COLORS[dataset]
+        ax.plot(df.index, df[dataset], label=dataset, color=color)
+
+    ax.set_title(f"${agg}({column!r})$".replace("_", "\\_"))
+    ax.set_xlabel("")
+    ax.set_xticks(df.index)
+    fig.autofmt_xdate(ha="center", rotation=15)
+    return fig
+
+
+def _show_mpl(fig: Figure) -> None:
+    st.pyplot(fig, clear_figure=True, dpi=config.FIGURE_DPI)
+
+
+def _plot_plotly(df: pd.DataFrame, agg: str, column: str) -> "plotly.graph_objects.Figure":
+    import plotly.graph_objects as go  # type: ignore[import-untyped]
+
+    fig = go.Figure()
+
+    for dataset in df.columns:
+        color = DATASET_COLORS[dataset]
+        fig.add_trace(go.Scatter(x=df.index, y=df[dataset], name=dataset, mode="lines+markers", line=dict(color=color)))
+
+    fig.update_layout(
+        title=f"{agg}({column!r})",
+    )
+    return fig
+
+
+def _show_plotly(fig: "plotly.graph_objects.Figure") -> None:
+    st.plotly_chart(fig, width="stretch")

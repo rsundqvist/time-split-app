@@ -121,7 +121,8 @@ with folds_tab:
     )
 
 with aggregations_tab:
-    AGGREGATION_WIDGET.plot_aggregations(df, split_kwargs=split_kwargs, aggregations=aggregations)
+    AGGREGATION_WIDGET.show_data(df, split_kwargs=split_kwargs, aggregations=aggregations)
+    AGGREGATION_WIDGET.plot_data(df, split_kwargs=split_kwargs, aggregations=aggregations)
 
 # Record performance
 TOTAL_RUNTIME = perf_counter() - start

@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* Configs `PLOT_RAW_TIMESERIES_FN` and `PLOT_AGGREGATIONS_PER_FOLD_FN`.
+* Use `plotly` to draw `🔍 Show raw data` and `📈 Aggregations per fold` figures when installed.
+
+### Changed
+* Show tail instead of head in the `🔍 Show raw data` tab.
+
 ### Fixed
 * The `PLOT_RAW_TIMESERIES` config value is now read from the correct variable.
 * The `seaborn` package is no longer listed as required (was not used).
+
+### Removed
+* Unused argument `AggregationWidget.odd_row_props`
+
 ## [2.4.0] - 2025-12-15
 
 ### Added

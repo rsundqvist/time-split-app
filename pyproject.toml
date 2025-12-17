@@ -47,6 +47,7 @@ documentation = "https://time-fold.readthedocs.io"
 
 [tool.poetry.group.manual-extras.dependencies]
 pyarrow = "~22.0.0"
+plotly = "~6.5.0"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"

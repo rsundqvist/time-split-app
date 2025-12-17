@@ -8,8 +8,30 @@ from rics.env import read as _env
 # Configurable by application users
 PLOT_RAW_TIMESERIES: bool = _env.read_bool("PLOT_RAW_TIMESERIES", True)
 """Enable plot in the `🔍 Show raw data` tab."""
+PLOT_RAW_TIMESERIES_FN: str = _env.read_str("PLOT_RAW_TIMESERIES_FN")
+"""Raw timeseries plotter used in the `🔍 Show raw data` tab.
+
+* Type: ``(pandas.DataFrame) -> None``.
+* Format: ``path.to.module:func_name``.
+
+Built-ins include :meth:`.DataWidget.plot_matplotlib` and :meth:`DataWidget.plot_plotly`. Defaults to
+``plot_plotly`` if ``plotly`` is installed, otherwise ``plot_matplotlib`` is used.
+"""
+
 PLOT_AGGREGATIONS_PER_FOLD: bool = _env.read_bool("PLOT_AGGREGATIONS_PER_FOLD", True)
 """Enable plots in the `📈 Aggregations per fold` tab."""
+PLOT_AGGREGATIONS_PER_FOLD_NUM_THREADS: int = _env.read_int("PLOT_AGGREGATIONS_PER_FOLD_NUM_THREADS")
+"""Maximum number of threads used to plot aggregations (built-in variants only). Default: 0=disabled."""
+PLOT_AGGREGATIONS_PER_FOLD_FN: str = _env.read_str("PLOT_AGGREGATIONS_PER_FOLD_FN")
+"""Plotter to use in the `📈 Aggregations per fold` tab.
+
+* Type: ``(pandas.DataFrame, DatetimeIndexSplitterKwargs, aggregations: dict[str, str]) -> None``.
+* Format: ``path.to.module:func_name``.
+
+Built-ins include :meth:`.AggregationWidget.plot_matplotlib` and :meth:`AggregationWidget.plot_plotly`. Defaults to
+``plot_plotly`` if ``plotly`` is installed, otherwise ``plot_matplotlib`` is used.
+"""
+
 FIGURE_DPI: int = _env.read_int("FIGURE_DPI", 200)
 """Controls figure fidelity when possible. Higher values look better but is slower."""
 MAX_SPLITS = _env.read_int("MAX_SPLITS", 100)

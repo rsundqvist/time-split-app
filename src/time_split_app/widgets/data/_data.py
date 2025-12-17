@@ -1,5 +1,6 @@
 import warnings
 from dataclasses import dataclass, field
+from importlib.util import find_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import perf_counter
@@ -20,10 +21,22 @@ from ._sample_data import SampleDataWidget
 from ._loader_from_env_entrypoint import from_env_entrypoint
 from .load import error_on_unaggregated_data, make_formatter
 from ...formatting import select_cmap, select_formatters
+from rics.misc import get_by_full_name
 
 
 def _get_upload_limit() -> int:
     return int(stc.get_option("server.maxUploadSize"))
+
+
+@st.cache_resource
+def _get_plot_fn() -> Callable[[pd.DataFrame], None]:
+    if value := config.PLOT_RAW_TIMESERIES_FN:
+        LOGGER.info(f"Using {config.PLOT_RAW_TIMESERIES_FN=}.")
+        return get_by_full_name(value, default_module=__package__)  # type: ignore[no-any-return]
+
+    plotter = DataWidget.plot_plotly if find_spec("plotly") else DataWidget.plot_matplotlib
+    LOGGER.info(f"Using {plotter.__qualname__} to plot raw timeseries.")
+    return plotter
 
 
 @dataclass(frozen=True)
@@ -38,6 +51,9 @@ class DataWidget:
     """Widget used to load included datasets."""
     custom_dataset_loader: list[DataLoaderWidget] = field(default_factory=from_env_entrypoint)
     """List of user-defined loader implementations."""
+
+    plot_fn: Callable[[pd.DataFrame], None] = field(default_factory=_get_plot_fn)
+    """Function to use to plot the data."""
 
     n_samples: int = -1
     """Number of sample rows to show.
@@ -297,7 +313,7 @@ class DataWidget:
     ) -> None:
         st.subheader("Data", divider="rainbow")
 
-        df, info = self._head(df)
+        df, info = self._tail(df)
         if style_fn:
             df = style_fn(df)
         st.dataframe(df, hide_index=False, width="stretch")
@@ -306,24 +322,37 @@ class DataWidget:
     def plot_data(self, df: pd.DataFrame) -> None:
         start = perf_counter()
 
-        df, info = self._head(df)
+        df, info = self._tail(df)
 
-        ax = df.plot()
-        ax.figure.suptitle(df.index.name)
-        ax.set_xlabel(None)
-        ax.figure.autofmt_xdate()
-
-        with st.container(border=True):
-            st.pyplot(ax.figure, dpi=config.FIGURE_DPI)
+        self.plot_fn(df)
 
         seconds = perf_counter() - start
         msg = f"Created `raw` figure for data of `shape={df.shape}` in `{format_seconds(seconds)}`."
         log_perf(msg, df, seconds, extra={"figure": "raw"})
         st.caption(msg + " " + info)
 
-    def _head(self, df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
+    @classmethod
+    def plot_matplotlib(cls, df: pd.DataFrame) -> None:
+        ax = df.plot(backend="matplotlib")
+        ax.figure.suptitle(df.index.name)
+        ax.set_xlabel(None)
+        ax.figure.autofmt_xdate()
+        with st.container(border=True):
+            st.pyplot(ax.figure, dpi=config.FIGURE_DPI)
+
+    @classmethod
+    def plot_plotly(cls, df: pd.DataFrame) -> None:
+        import plotly.graph_objects as go  # type: ignore[import-untyped]
+
+        fig = go.Figure()
+        for column in df.columns:
+            fig.add_trace(go.Scatter(x=df.index, y=df[column], name=column, mode="lines"))
+        with st.container(border=True):
+            st.plotly_chart(fig, width="stretch")
+
+    def _tail(self, df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
         n_df = len(df)
-        head = df.head(self.n_samples) if (0 < self.n_samples < n_df) else df
+        head = df.tail(self.n_samples) if (0 < self.n_samples < n_df) else df
         n_head = len(head)
 
         pretty_head = make_formatter(n_head)(n_head)
@@ -331,7 +360,7 @@ class DataWidget:
 
         return (
             head,
-            f"Showing {'all' if n_df == n_head else 'the first'} `{pretty_head}` of `{pretty_df}` (`{n_head / n_df:.2%}`) rows.",
+            f"Showing {'all' if n_df == n_head else 'the last'} `{pretty_head}` of `{pretty_df}` (`{n_head / n_df:.2%}`) rows.",
         )
 
     def get_data_sources(self) -> dict[tuple[DataSource, int | None], tuple[str, str]]:
@@ -367,38 +396,6 @@ class DataWidget:
             )
 
         return sources
-
-    @classmethod
-    def select_range_subset(cls, df: pd.DataFrame) -> tuple[pd.DataFrame, tuple[pd.Timestamp, pd.Timestamp]]:
-        min_value = df.index[0].to_pydatetime()
-        max_value = df.index[-1].to_pydatetime()
-
-        with st.container(border=True):
-            st.subheader("Subset range", divider="red")
-            st.caption("Select a subset of the available range of data.")
-
-            with st.container(border=True):
-                start, end = st.slider(
-                    "partial-range",
-                    min_value=min_value,
-                    max_value=max_value,
-                    value=(min_value, max_value),
-                    step=pd.Timedelta(minutes=5).to_pytimedelta(),
-                    format="YYYY-MM-DD HH:mm:ss",
-                    help="Drag the sliders to use a subset of the original data.",
-                    label_visibility="collapsed",
-                )
-
-            avail = (max_value - min_value).total_seconds()
-            used = (end - start).total_seconds()
-            st.caption(
-                f"You've selected `{format_seconds(used)}` of `{format_seconds(avail)}` "
-                f"(`{used / avail:.1%}`) of the total available data range."
-            )
-
-        df = df[start:end]
-        limits = df.index.min(), df.index.max()
-        return df, limits
 
     @staticmethod
     def _select_index(df: pd.DataFrame) -> pd.DataFrame:

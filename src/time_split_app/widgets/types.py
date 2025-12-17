@@ -247,8 +247,6 @@ class QueryParams:
     def make(cls, **kwargs: Any) -> Self:
         """Construct a new instance keyword arguments."""
 
-        # TODO what happens if someone sends a query string with millions of zeros?
-
         for parameter in "step", "n_splits":
             if (value := kwargs.get(parameter)) is not None:
                 kwargs[parameter] = int(value)
