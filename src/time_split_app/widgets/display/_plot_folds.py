@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 from time_split import plot as lib_plot_fn
 from rics.strings import format_seconds
 from time_split_app._logging import log_perf
-from time_split_app import config
+from time_split_app.style import show_figure
 from ._select_impl_from_entrypoint import get_user_plot_fn
 from time_split_app.widgets.types import BarLabels, RemovedFolds, QueryParams
 from time_split.types import DatetimeIndexSplitterKwargs, DatetimeIterable
@@ -73,7 +73,7 @@ class PlotFoldsWidget:
                 bar_labels=bar_labels,
             )
             assert isinstance(ax.figure, Figure)
-            st.pyplot(ax.figure, clear_figure=True, dpi=config.FIGURE_DPI)
+            show_figure(ax.figure)
 
         seconds = perf_counter() - start
 

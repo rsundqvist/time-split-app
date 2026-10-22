@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Switch to `uv` (including build backend).
 
+### Fixed
+- Streamlit `st.pyplot` deprecation warning.
+- Memory leak from unclosed Matplotlib figures.
+
 ## [2.5.0] - 2025-12-17
 
 ### Added

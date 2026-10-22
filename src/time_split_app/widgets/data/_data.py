@@ -15,6 +15,7 @@ from ._data_loader_widget import DataLoaderWidget
 from time_split_app.datasets import get_pandas_read_function, COMPRESSION_SUFFIXES, FILE_SUFFIXES
 from ..types import DataSource, QueryParams
 from ... import config
+from ...style import show_figure
 from ..._logging import log_perf, LOGGER
 from ._datasets import DatasetWidget
 from ._sample_data import SampleDataWidget
@@ -338,7 +339,7 @@ class DataWidget:
         ax.set_xlabel(None)
         ax.figure.autofmt_xdate()
         with st.container(border=True):
-            st.pyplot(ax.figure, dpi=config.FIGURE_DPI)
+            show_figure(ax.figure)
 
     @classmethod
     def plot_plotly(cls, df: pd.DataFrame) -> None:

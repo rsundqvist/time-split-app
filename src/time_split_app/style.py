@@ -1,11 +1,14 @@
 """Weg page style customization."""
 
+import io
 import logging
 import os
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
 
 from . import config
 
@@ -44,3 +47,12 @@ def apply_custom_css() -> None:
         with right:
             st.dataframe(pd.Series(st.query_params, name="Query param value").sort_index().to_frame())
             st.dataframe(pd.Series(os.environ, name="Env var value").sort_index().to_frame())
+
+
+def show_figure(fig: Figure) -> None:
+    """Show and close a Matplotlib figure using the configured DPI."""
+    # Passing savefig kwargs (like dpi) to st.pyplot is deprecated.
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight", dpi=config.FIGURE_DPI)
+    plt.close(fig)
+    st.image(buf, width="stretch")

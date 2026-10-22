@@ -18,6 +18,7 @@ from time_split.types import DatetimeIndexSplitterKwargs
 from time_split_app._logging import log_perf, LOGGER
 
 from time_split_app import config
+from time_split_app.style import show_figure
 
 
 from time_split_app.formatting import select_cmap, select_formatters
@@ -302,7 +303,7 @@ def _plot_mpl(df: pd.DataFrame, agg: str, column: str) -> Figure:
 
 
 def _show_mpl(fig: Figure) -> None:
-    st.pyplot(fig, clear_figure=True, dpi=config.FIGURE_DPI)
+    show_figure(fig)
 
 
 def _plot_plotly(df: pd.DataFrame, agg: str, column: str) -> "plotly.graph_objects.Figure":
