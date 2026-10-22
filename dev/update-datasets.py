@@ -10,11 +10,9 @@ import click
 import fsspec
 import pandas as pd
 import tomli_w
-from rics.logs import disable_temporarily
 
-with disable_temporarily("streamlit.runtime.caching.cache_data_api"):
-    from time_split_app.datasets import DatasetConfig
-    from time_split_app.widgets.data import SampleDataWidget
+from time_split_app.datasets import DatasetConfig
+from time_split_app.widgets.data import SampleDataWidget
 
 ROOT = Path(__file__).parent
 WRITERS = {
@@ -75,8 +73,8 @@ def upload_local(df: pd.DataFrame, compression: str | None) -> None:
 def upload_remote(df: pd.DataFrame, compression: str | None) -> None:
     envs = {
         "AWS_ENDPOINT_URL_S3": "http://localhost:9000",
-        "AWS_ACCESS_KEY_ID": "minioadmin",
-        "AWS_SECRET_ACCESS_KEY": "minioadmin",
+        "AWS_ACCESS_KEY_ID": "s3admin",
+        "AWS_SECRET_ACCESS_KEY": "s3admin",
         "AWS_MAX_ATTEMPTS": "2",
     }
     os.environ.update(envs)
