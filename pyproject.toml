@@ -5,7 +5,8 @@ description = "Companion app for the `time-split` library."
 authors = [
     { name = "Richard Sundqvist", email = "richard.sundqvist@live.se" },
 ]
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE.md"]  # uv_build doesn't auto-include LICENSE* like poetry-core did.
 readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -14,7 +15,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -45,31 +45,37 @@ documentation = "https://time-fold.readthedocs.io"
 "Bug Tracker" = "https://github.com/rsundqvist/time-split-app/issues"
 "Changelog" = "https://github.com/rsundqvist/time-split-app/blob/master/CHANGELOG.md"
 
-[tool.poetry.group.manual-extras.dependencies]
-pyarrow = "~22.0.0"
-plotly = "~6.5.0"
+[dependency-groups]
+manual-extras = [
+    "pyarrow~=26.0.0",
+    "plotly~=7.1.0",
+]
+test = [
+    "pytest~=9.1.1",
+    "coverage~=7.16.2",
+    "pytest-cov~=7.1.0",
+    # Needed for manual testing using dev-scripts, namely the dev/update-datasets.py.
+    "click~=8.5.0",
+    "tomli-w~=1.2.0",
+    "s3fs==2026.9.0",
+]
+devops = [
+    "nox~=2026.8.17",
+    "invoke~=3.0.3",
+    "mypy~=2.4.0",
+    "ruff~=0.17.1",
+    "codespell~=2.4.3",
+    "bump2version==1.0.1",
+]
+types = [
+    "types-croniter",
+]
 
-[tool.poetry.requires-plugins]
-poetry-plugin-export = ">=1.8"
+[tool.uv]
+default-groups = "all"
 
-[tool.poetry.group.test.dependencies]
-pytest = "~8.4.2"
-coverage = "~7.11.0"
-pytest-cov = "~7.0.0"
-
-# Needed for manual testing using dev-scripts, namely the dev/update-datasets.py.
-click = "~8.2.1"
-tomli-w = "~1.2.0"
-s3fs = "2025.7.0"
-
-[tool.poetry.group.devops.dependencies]
-invoke = "~2.2.1"
-mypy = "~1.18.2"
-ruff = "~0.14.2"
-
-safety = "~3.6.2"
-codespell = "~2.4.1"
-bump2version = "~1.0.1"
+[tool.uv.build-backend]
+source-exclude = ["**/.ruff_cache"]  # uv_build ignores .gitignore; nested ruff.toml files create caches in src/.
 
 [tool.ruff]
 line-length = 120
@@ -156,5 +162,5 @@ log_file_level = 10
 log_file = "pytest.log"
 
 [build-system]
-requires = ["poetry-core>=1.0.8"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"

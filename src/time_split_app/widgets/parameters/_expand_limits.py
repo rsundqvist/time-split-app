@@ -23,7 +23,7 @@ class ExpandLimitsWidget:
     """Allow free-form input parsed using :func:`ast.literal_eval`."""
 
     default_value: str = "d<3h"
-    """Default (pre-selected) value for the manual input field."""
+    """Default (preselected) value for the manual input field."""
     change_props: str = "color: black; background-color: rgba(255, 200, 50, 0.5);"
     """Properties used to highlight changed limits. Set to an empty string to disable."""
     no_change_props: str = "color: rgba(200, 200, 200, 0.5)"

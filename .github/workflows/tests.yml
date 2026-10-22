@@ -12,14 +12,12 @@ on:
         description: "Test scenario tags"
   push:
     branches:
-     - master
+      - master
+      - ci/*
   pull_request:
     branches:
 
 env:
-  # Need to be explicit when using pip; this is only for the official Poetry (curl-based) installer.
-  # https://github.com/python-poetry/poetry/issues/7611
-  POETRY_VERSION: 2.2.1
   POLARS_SKIP_CPU_CHECK: true
 
 jobs:
@@ -27,18 +25,18 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Set up Python 3.14
-        uses: actions/setup-python@v5
+      - name: Set up Python 3.14 with uv
+        uses: astral-sh/setup-uv@v10.0.1
         with:
-          python-version: 3.14
+          python-version: '3.14'
+
+      - name: Install linting tools
+        run: uv sync --locked --only-group devops
 
       - name: Linting
-        run: |
-          pip install poetry==$POETRY_VERSION
-          poetry install --only=main,devops
-          poetry run inv lint
+        run: uv run --no-sync inv lint
 
   tests:
     needs: linting
@@ -49,31 +47,23 @@ jobs:
       fail-fast: true
       matrix:
         os: [ Ubuntu ]
-        python-version: [ '3.11', '3.12', '3.13', '3.14']
+        python-version: [ '3.11', '3.12', '3.13', '3.14' ]
         experimental: [ false ]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Set up Python ${{ matrix.python-version }} with uv
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install system deps
-        shell: bash
-        run: |
-          pip install nox
-          pip install poetry==$POETRY_VERSION
+      - name: Install nox
+        run: uv sync --locked --only-group devops
 
       - name: Run mypy with nox
         shell: bash
-        run: nox --force-color -s mypy-${{ matrix.python-version }}
+        run: uv run --no-sync nox --force-color -s mypy-${{ matrix.python-version }}
 
       - name: Run tests with nox
         shell: bash
-        run: nox --force-color -s tests-${{ matrix.python-version }}
-
-      - name: Run safety check
-        if: matrix.python-version == '3.14' && matrix.os == 'Ubuntu'
-        shell: bash
-        run: nox --force-color -s safety
+        run: uv run --no-sync nox --force-color -s tests-${{ matrix.python-version }}

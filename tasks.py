@@ -43,10 +43,17 @@ def clean_build(c: Context) -> None:
 @task
 def clean_python(c: Context) -> None:
     """Clean up python file artifacts."""
-    _run(c, "find . -name '*.pyc' -exec rm -f {} +")
-    _run(c, "find . -name '*.pyo' -exec rm -f {} +")
-    _run(c, "find . -name '*~' -exec rm -f {} +")
-    _run(c, "find . -name '__pycache__' -exec rm -fr {} +")
+    # Skip the in-project uv venv.
+    _run(c, "find . -path ./.venv -prune -o -name '*.pyc' -exec rm -f {} +")
+    _run(c, "find . -path ./.venv -prune -o -name '*.pyo' -exec rm -f {} +")
+    _run(c, "find . -path ./.venv -prune -o -name '*~' -exec rm -f {} +")
+    _run(c, "find . -path ./.venv -prune -o -name '__pycache__' -exec rm -fr {} +")
+
+
+@task
+def clean_nox(c: Context) -> None:
+    """Clean up nox files."""
+    _run(c, "rm -fr .nox/")
 
 
 @task
@@ -61,7 +68,7 @@ def clean_ruff(c: Context) -> None:
     _run(c, "ruff clean")
 
 
-@task(pre=[clean_build, clean_python, clean_ruff, clean_tests])
+@task(pre=[clean_build, clean_python, clean_ruff, clean_nox, clean_tests])
 def clean(_: Context) -> None:
     """Run all clean sub-tasks."""
 
@@ -70,39 +77,31 @@ def clean(_: Context) -> None:
 def format_(c: Context, check: bool = False) -> None:
     """Format code."""
     format_options = ["--check", "--diff"] if check else []
-    _run(c, f"poetry run ruff format {' '.join(format_options)} {PYTHON_TARGETS_STR}")
+    _run(c, f"ruff format {' '.join(format_options)} {PYTHON_TARGETS_STR}")
     if not check:
-        _run(c, f"poetry run ruff check --fix-only {' '.join(format_options)} {PYTHON_TARGETS_STR}")
+        _run(c, f"ruff check --fix-only {' '.join(format_options)} {PYTHON_TARGETS_STR}")
 
 
 @task
 def flake8(c: Context, check: bool = False) -> None:
     """Run flake8."""
     lint_options = ["--no-fix"] if check else []
-    _run(c, f"poetry run ruff check {' '.join(lint_options)} {PYTHON_TARGETS_STR}")
+    _run(c, f"ruff check {' '.join(lint_options)} {PYTHON_TARGETS_STR}")
 
 
 @task
 def spelling(c: Context) -> None:
     """Run spell check."""
-    _run(c, f"poetry run codespell {PYTHON_TARGETS_STR}")
+    _run(c, f"codespell {PYTHON_TARGETS_STR}")
 
 
 @task
-def safety(c: Context) -> None:
-    """Run safety."""
-    ignores = [
-        70612,  # CVE-2019-8341
-    ]
-
-    _run(
-        c,
-        f"poetry export --format=requirements.txt --without-hashes "
-        f"| poetry run safety check --stdin --full-report -i {','.join(map(str, ignores))}",
-    )
+def audit(c: Context) -> None:
+    """Audit dependencies for known vulnerabilities."""
+    _run(c, "uv audit --preview-features audit-command")
 
 
-@task(pre=[safety, call(flake8, check=True), call(format_, check=True), spelling])
+@task(pre=[audit, call(flake8, check=True), call(format_, check=True), spelling])
 def lint(_: Context) -> None:
     """Run all linting."""
 
@@ -110,13 +109,13 @@ def lint(_: Context) -> None:
 @task
 def mypy(c: Context) -> None:
     """Run mypy."""
-    _run(c, f"poetry run mypy {SOURCE_DIR} {TEST_DIR}")
+    _run(c, f"mypy {SOURCE_DIR} {TEST_DIR}")
 
 
 @task
 def tests(c: Context) -> None:
     """Run tests."""
-    _run(c, f"poetry run pytest {TEST_DIR} {SOURCE_DIR}")
+    _run(c, f"pytest {TEST_DIR} {SOURCE_DIR}")
 
 
 @task(
@@ -127,8 +126,12 @@ def tests(c: Context) -> None:
 )
 def version(c: Context, part: str, dry_run: bool = False) -> None:
     """Bump version."""
+    commit_options = ["--amend", "--date=now", "--no-edit", "--no-verify", "--quiet"]
     bump_options = ["--dry-run"] if dry_run else []
-    _run(c, f"poetry run bump2version {' '.join(bump_options)} {part}")
+
+    _run(c, f"uv run --frozen bump2version {' '.join(bump_options)} {part}")
+    if not dry_run:
+        _run(c, f"uv lock && git add uv.lock && git commit {' '.join(commit_options)}")
 
 
 @task

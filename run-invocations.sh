@@ -3,13 +3,13 @@ set -e
 
 echo "---------- run-invocations.sh -----------"
 echo "1/5: Clean ------------------------------"
-poetry run inv clean
+uv run inv clean
 echo "2/5: Format code ------------------------"
-poetry run inv format
+uv run inv format
 echo "3/5: Test -------------------------------"
-poetry run inv tests
+uv run inv tests
 echo "4/5: Lint -------------------------------"
-poetry run inv lint
+uv run inv lint
 echo "5/5: Typecheck (mypy) -------------------"
-poetry run inv mypy
+uv run inv mypy
 echo "---------------- Finished ---------------"

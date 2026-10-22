@@ -4,11 +4,14 @@ ARG _VIRTUAL_ENV=/opt/venv
 FROM python:$PYTHON_BASE AS build
 ARG _VIRTUAL_ENV
 
-ENV PIP_NO_CACHE_DIR=off \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_DEFAULT_TIMEOUT=100
+COPY --from=ghcr.io/astral-sh/uv:0.13.5 /uv /bin/
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_NO_CACHE=1 \
+    UV_PYTHON_DOWNLOADS=0 \
+    UV_PROJECT_ENVIRONMENT=$_VIRTUAL_ENV
 
-# Intall system dependencies
+# Install system dependencies
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
     # Install build tools
@@ -18,25 +21,15 @@ RUN apt-get update && \
     tini=0.19.* \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Poetry setup
-ENV POETRY_HOME=/opt/poetry
-ENV POETRY_VERSION=2.2.1
-RUN python -m venv $POETRY_HOME && \
-    $POETRY_HOME/bin/pip install poetry==$POETRY_VERSION
-
-# https://github.com/python-poetry/poetry/issues/6397#issuecomment-1236327500
-# docker build . -t tmp && docker run --rm -it tmp /bin/bash
-
-# Create project env
-ENV VIRTUAL_ENV=$_VIRTUAL_ENV
+# Create project env. Use venv (not uv) to keep pip, which the entrypoint needs for EXTRA_PIP_PACKAGES.
 RUN python -m venv $_VIRTUAL_ENV
-# Install project dependencies (no root).
-COPY README.md pyproject.toml poetry.lock ./
-RUN $POETRY_HOME/bin/poetry install --only main --no-root --no-directory
+# Install project dependencies (no root). Inexact to keep pip.
+COPY README.md LICENSE.md pyproject.toml uv.lock ./
+RUN uv sync --locked --no-default-groups --inexact --no-install-project
 
-# Install main project; can't use poetry since it will install as .pth to src/.
+# Install main project (non-editable, so the venv doesn't point back at src/).
 COPY src/ ./src
-RUN $VIRTUAL_ENV/bin/python -m pip install . --no-deps
+RUN uv sync --locked --no-default-groups --inexact --no-editable
 
 FROM python:$PYTHON_BASE AS app
 ARG _VIRTUAL_ENV
