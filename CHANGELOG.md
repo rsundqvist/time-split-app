@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-10-22
+
 ### Changed
 - Switch to `uv` (including build backend).
 
@@ -189,7 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Branch from [time_split@v0.5.0](https://github.com/rsundqvist/time-split/blob/v0.5.0/CHANGELOG.md).
 
 
-[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.5.0...HEAD
+[Unreleased]: https://github.com/rsundqvist/time-split-app/compare/v2.5.1...HEAD
+[2.5.1]: https://github.com/rsundqvist/time-split-app/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/rsundqvist/time-split-app/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/rsundqvist/time-split-app/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/rsundqvist/time-split-app/compare/v2.3.1...v2.3.2
